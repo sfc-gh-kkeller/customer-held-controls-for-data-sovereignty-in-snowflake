@@ -1,0 +1,17 @@
+flowchart LR
+  subgraph client["Data owner"]
+    K["secret keys<br/>(local only)"]
+    E[encrypt]
+    D["decrypt + verify"]
+  end
+  subgraph sf["Snowflake standard warehouse"]
+    T[("EMPLOYEES_ENC<br/>plaintext dims + BINARY ciphertexts")]
+    C[("HE_KEYS<br/>public context only")]
+    U["HE_SUM / HE_ADD / HE_MUL_PLAIN / HE_POLY ...<br/>Python UDF / UDAF / UDTF"]
+  end
+  K --> E -->|ciphertexts| T
+  E -->|"public context (~100 B)"| C
+  T --> U
+  C --> U
+  U -->|encrypted result| D
+  K --> D

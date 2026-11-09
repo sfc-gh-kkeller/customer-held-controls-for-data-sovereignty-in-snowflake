@@ -1,0 +1,19 @@
+[workspace]
+name = "sovereignty-opt3-local-join"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64", "osx-64"]
+
+[tasks]
+setup-snowflake = "bash setup.sh"
+lab = "jupyter lab notebooks/local_join.ipynb"
+run = "jupyter nbconvert --to notebook --execute --inplace notebooks/local_join.ipynb"
+
+[dependencies]
+python = "3.12.*"
+duckdb = ">=1.4.0"
+pandas = ">=2.0"
+pyarrow = ">=14.0"
+jupyterlab = ">=4.0"
+nbconvert = ">=7.0"
+matplotlib = ">=3.8"
+snowflake-connector-python = ">=3.12"

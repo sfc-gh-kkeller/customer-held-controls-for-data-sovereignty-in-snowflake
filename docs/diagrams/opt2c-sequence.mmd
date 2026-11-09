@@ -1,0 +1,24 @@
+sequenceDiagram
+  autonumber
+  actor An as Analyst (Snowsight)
+  participant SF as Snowflake: EAI UDFs
+  participant IdP as Mock IdP (device flow)
+  participant Ph as Phone / browser
+  participant Br as Key broker
+  participant QH as Snowflake: QUERY_HISTORY
+  An->>SF: SELECT SOV_DEVICE_START()
+  SF->>IdP: /device/authorize
+  IdP-->>An: verification URL + user code
+  An->>Ph: open URL, enter code
+  Ph->>IdP: user + TOTP + justification + classes
+  An->>SF: SET api_key = SOV_DEVICE_REDEEM(device_code)
+  SF->>IdP: /token (single use) → id_token
+  SF->>Br: /apikey(id_token, account, user, role, session, own query_id)
+  Br->>QH: that query_id RUNNING, same user/role/session, calls REDEEM, no sibling?
+  Br-->>SF: API key (stored only as hash, scoped to user+account+session)
+  An->>SF: SELECT SOV_DECRYPT_2C(salary, 'salary', $api_key) …
+  SF->>Br: /key(api_key, class, context, own query_id) — 1 per process
+  Br->>Br: scope + classification check (no call-back if wrong)
+  Br->>QH: one call-back per query (single-flight)
+  Br-->>SF: data key → process memory for this query
+  SF-->>An: plaintext rows (DECRYPT_RAW in SQL)

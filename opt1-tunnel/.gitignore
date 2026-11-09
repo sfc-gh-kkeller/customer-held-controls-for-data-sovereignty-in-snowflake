@@ -1,0 +1,33 @@
+# Medium article draft (not for repo)
+medium.md
+
+# Environment & secrets
+agent/.env
+.env
+*.env
+!*.env.template
+
+# Pixi
+.pixi/
+pixi.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Docker build artifacts
+snowflake/pixi.toml
+snowflake/pixi.lock
+
+# macOS
+.DS_Store
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+.handshake_secret
+agent/.handshake_secret
+.tunnel.pid
+tunnel_audit.log
+.pat

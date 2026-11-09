@@ -1,0 +1,37 @@
+# secrets & local state (never commit)
+**/.secrets/
+**/.pat
+**/.handshake_secret
+**/.env
+!**/.env.template
+**/.tunnel.pid
+**/tunnel_audit.log
+**/.sf_trust.json
+**/config.toml
+!**/config.example.toml
+**/secrets.toml
+**/*.p8
+**/*.pem
+**/*.key
+bonus-homomorphic/keys/
+opt2-keybroker/infra/outputs.json
+
+# build / envs / caches
+**/.pixi/
+**/.venv/
+**/cdk.out/
+**/node_modules/
+**/__pycache__/
+**/.pytest_cache/
+**/.ipynb_checkpoints/
+*.log
+
+# editor, OS, local notes
+.snowflake/
+.vscode/
+.idea/
+.DS_Store
+summary.txt
+
+# white paper is published separately
+whitepaper/

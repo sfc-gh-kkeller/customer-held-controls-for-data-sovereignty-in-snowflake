@@ -1,0 +1,16 @@
+flowchart LR
+  A((Analyst))
+  subgraph sf["Snowflake"]
+    L[("Locked data<br/>🔒 unreadable")]
+    W["Worker for this query<br/>remembers the key<br/>only until the query ends"]
+  end
+  subgraph you["Your key safe"]
+    K["🔑 Key"]
+  end
+  A -->|"1. runs a query"| L
+  L -->|"2. worker needs the key"| W
+  W -->|"3. fetches it once"| K
+  K -->|"4. key for this query"| W
+  W -->|"5. readable answer;<br/>key forgotten"| A
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class K,W key

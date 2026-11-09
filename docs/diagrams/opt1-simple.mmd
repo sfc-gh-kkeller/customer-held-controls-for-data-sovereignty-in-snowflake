@@ -1,0 +1,15 @@
+flowchart LR
+  subgraph you["Your building"]
+    D[("Your sensitive data")]
+    S["Your switch<br/>ON for 15 min"]
+  end
+  subgraph sf["Snowflake"]
+    Q["Analyst asks<br/>a question"]
+    R["Answer<br/>(not stored)"]
+  end
+  S -->|"1. you open the line"| D
+  Q -->|"2. question goes through the line"| D
+  D -->|"3. answer comes back live"| R
+  S -.->|"4. time's up: line closed,<br/>questions fail"| Q
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class S key

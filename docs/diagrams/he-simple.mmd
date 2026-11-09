@@ -1,0 +1,14 @@
+flowchart LR
+  subgraph you["Your building"]
+    E["Lock numbers<br/>with a special lock"]
+    U["🔑 Unlock the result"]
+  end
+  subgraph sf["Snowflake"]
+    L[("Locked numbers<br/>🔒 unreadable")]
+    C["Adds up the locked numbers<br/>without opening them"]
+  end
+  E -->|"1. upload locked numbers"| L
+  L -->|"2. Snowflake calculates"| C
+  C -->|"3. locked total comes back"| U
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class U,E key

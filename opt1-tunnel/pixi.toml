@@ -1,0 +1,65 @@
+[workspace]
+name = "iceberg-snowflake-tunnel"
+description = "Query on-premise Apache Iceberg tables from Snowflake via a secure WebSocket tunnel"
+authors = ["Kevin Keller"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64", "linux-aarch64", "osx-64"]
+
+# ── Tasks ─────────────────────────────────────────────────────────────────────
+
+[tasks]
+# Start local Iceberg stack (MinIO + Lakekeeper)
+start   = { cmd = "docker compose up -d" }
+stop    = { cmd = "docker compose down" }
+logs    = { cmd = "docker compose logs -f lakekeeper minio" }
+
+# Seed demo tables into the Iceberg catalog
+seed    = { cmd = "python demo-data/seed.py" }
+
+# Start the on-premise tunnel agent
+agent   = { cmd = "cd agent && python onpremise_agent.py" }
+# On-demand tunnel with hard TTL (the data owner's switch)
+# Resumes the compute pool + SPCS service if suspended and waits until RUNNING (~1 min cold), then opens the tunnel.
+#   pixi run tunnel-up                       -> 15 min, default reason
+#   pixi run tunnel-up 30m "Q3 payroll audit HR-123"
+# Ctrl+C or `pixi run tunnel-down` (other terminal) closes it early; TTL closes it regardless.
+tunnel-up     = { cmd = "cd agent && python tunnel_ctl.py up --ttl {{ ttl }} --reason '{{ reason }}'", args = [{ arg = "ttl", default = "15m" }, { arg = "reason", default = "Snowsight demo" }], depends-on = ["lake-up"] }
+# Same, but also RESUMEs the SPCS service on open and SUSPENDs it on close (Snowflake endpoint disappears too)
+tunnel-up-full = { cmd = "cd agent && python tunnel_ctl.py up --ttl {{ ttl }} --reason '{{ reason }}' --suspend-service", args = [{ arg = "ttl", default = "15m" }, { arg = "reason", default = "Snowsight demo" }], depends-on = ["lake-up"] }
+tunnel-down   = { cmd = "cd agent && python tunnel_ctl.py down" }          # asks whether to suspend service + pool
+tunnel-down-suspend = { cmd = "cd agent && python tunnel_ctl.py down --suspend" }
+tunnel-down-keep    = { cmd = "cd agent && python tunnel_ctl.py down --keep" }
+tunnel-status = { cmd = "cd agent && python tunnel_ctl.py status && tail -n 5 tunnel_audit.log" }
+# Idempotent: make sure the on-prem Iceberg lake (RustFS + Lakekeeper) is running
+lake-up       = { cmd = "docker compose up -d --wait minio lakekeeper" }
+deploy        = { cmd = "bash snowflake/deploy.sh" }
+
+# Full local setup in one command
+setup   = { cmd = "docker compose up -d && sleep 5 && python demo-data/seed.py" }
+
+# ── Dependencies ──────────────────────────────────────────────────────────────
+
+[dependencies]
+python              = ">=3.11"
+pip                 = ">=24.0"
+
+# Tunnel agent
+websockets          = ">=12.0"
+cryptography        = ">=41.0"
+requests            = ">=2.31"
+python-dotenv       = ">=1.0"
+
+# Iceberg / data
+duckdb              = ">=1.4.0"
+pyiceberg           = ">=0.6.0"
+pyarrow             = ">=14.0"
+pandas              = ">=2.0"
+boto3               = ">=1.34"
+
+# iceberg-agent HTTP server
+aiohttp             = ">=3.9"
+brotli              = ">=1.1"
+uvloop              = ">=0.19"
+
+# Snowflake connector (used by iceberg-agent inside SPCS)
+snowflake-connector-python = ">=3.17.4,<4"

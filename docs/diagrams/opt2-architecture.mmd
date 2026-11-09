@@ -1,0 +1,30 @@
+flowchart LR
+  A((Analyst))
+  subgraph owner["Data owner – own AWS account"]
+    direction TB
+    L["Encrypt before load<br/>AES-256-GCM per column"]
+    P["Step-up portal<br/>TOTP + justification"]
+    GT[("Step-up grants<br/>time-boxed")]
+    B["Key broker<br/>Lambda"]
+    KMS[("AWS KMS<br/>wraps data keys")]
+    CW[("Audit log<br/>user · query · reason")]
+    P --> GT
+  end
+  subgraph sf["Snowflake"]
+    direction TB
+    T[("EMPLOYEES_ENC<br/>ciphertext only")]
+    MP["Masking policy<br/>DECRYPT(value, GET_KEY('salary'))"]
+    EF["External function GET_KEY<br/>IMMUTABLE · query context headers"]
+    QH["Query history<br/>is query RUNNING?"]
+    T --> MP --> EF
+  end
+  L -->|ciphertext| T
+  L -->|wrapped data key| KMS
+  A -->|"① step-up"| P
+  A -->|"② SELECT"| T
+  EF -->|"③ query_id · user · role"| B
+  B -->|"④ grant valid?"| GT
+  B -->|"⑤ call-back"| QH
+  B -->|"⑥ unwrap"| KMS
+  B --> CW
+  B -->|"⑦ key or NULL"| EF

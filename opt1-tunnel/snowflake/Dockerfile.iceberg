@@ -1,0 +1,34 @@
+# ── Iceberg Agent ─────────────────────────────────────────────────────────────
+# Runs inside Snowflake Container Services alongside tunnel-sidecar.
+# Exposes a REST API that:
+#   - Proxies Iceberg REST catalog calls (with minio hostname rewriting)
+#   - Proxies MinIO S3 object reads/writes
+#   - Executes DuckDB queries against on-premise Iceberg tables
+#   - Writes query results directly into Snowflake tables
+
+# ── Build stage: install Python env with pixi ─────────────────────────────────
+FROM ghcr.io/prefix-dev/pixi:latest AS builder
+
+WORKDIR /app
+
+COPY pixi.toml pixi.lock ./
+RUN pixi install --locked
+
+COPY iceberg_agent.py ./
+
+# ── Runtime stage ─────────────────────────────────────────────────────────────
+FROM ubuntu:24.04
+
+WORKDIR /app
+
+COPY --from=builder /app/.pixi          /app/.pixi
+COPY --from=builder /app/iceberg_agent.py ./
+
+ENV PATH="/app/.pixi/envs/default/bin:$PATH"
+ENV API_PORT=8090
+ENV ICEBERG_PORT=8181
+ENV S3_PORT=9000
+
+EXPOSE 8090
+
+CMD ["python", "iceberg_agent.py"]

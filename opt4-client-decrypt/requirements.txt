@@ -1,0 +1,12 @@
+# pip alternative to pixi (pixi.toml is the source of truth)
+streamlit[auth]>=1.66,<2
+duckdb>=2.0,<3
+cryptography>=46
+pandas>=2.3
+pyarrow>=20
+plotly>=6.3
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+pyyaml>=6.0
+sqlglot>=27
+adbc-driver-snowflake>=1.11

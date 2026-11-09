@@ -1,0 +1,53 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+snowflake_analytics.log
+
+# DuckDB local databases
+*.duckdb
+*.duckdb.wal
+
+# Config files with secrets (use templates instead)
+.streamlit/secrets.toml
+cache_config.yaml
+
+# Environment variables
+.env
+.env.*
+
+# Claude Code
+.claude/
+.secrets/
+cache_config.yaml
+*.duckdb
+snowflake_analytics.log
+.streamlit/secrets.toml

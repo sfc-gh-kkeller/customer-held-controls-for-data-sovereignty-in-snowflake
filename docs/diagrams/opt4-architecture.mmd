@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph onprem["On-premise (data owner)"]
+    U((Analyst)) -->|"OIDC login (st.login)"| APP["Streamlit app<br/>RBAC viewer / analyst / admin"]
+    APP --> DEC["Local decryption<br/>AES-256, key only on this host"]
+    DEC --> DDB[("DuckDB in-memory cache<br/>per session · TTL · no file access")]
+    APP -->|"read-only SQL"| DDB
+    SEED["Encrypt before load<br/>(client-side)"]
+  end
+  subgraph sf["Snowflake"]
+    T[("EMPLOYEES_ENCRYPTED<br/>plaintext dims + ciphertext PII / salary")]
+  end
+  SEED -->|ciphertext only| T
+  APP -->|"ADBC / Arrow · service user<br/>role-restricted PAT · IP allow-list"| T

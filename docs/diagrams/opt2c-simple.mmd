@@ -1,0 +1,21 @@
+flowchart LR
+  A((Analyst))
+  P["📱 Phone / laptop<br/>sign-in + code + reason"]
+  subgraph sf["Snowflake"]
+    L[("Locked data<br/>🔒 unreadable")]
+  end
+  subgraph you["Your side"]
+    I["Sign-in service"]
+    K["🔑 Key service<br/>checks: right person,<br/>right session, query running now"]
+  end
+  A -->|"1. asks for a code"| I
+  A -->|"2. approves on phone,<br/>types a reason"| P
+  P --> I
+  I -->|"3. personal pass,<br/>this session only"| A
+  A -->|"4. query with the pass"| L
+  L -->|"5. asks for the key"| K
+  K -->|"6. checks the running query"| L
+  K -->|"7. key for this query only"| L
+  L -->|"8. readable answer"| A
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class K,I key

@@ -1,0 +1,29 @@
+# ── Tunnel Sidecar ────────────────────────────────────────────────────────────
+# Generic TCP port-forwarding service — no application logic.
+# Receives port mappings from the on-premise agent over WebSocket, then opens
+# local TCP listeners so that other containers can reach on-premise services
+# as if they were running locally.
+
+# ── Build stage ───────────────────────────────────────────────────────────────
+FROM ghcr.io/prefix-dev/pixi:latest AS builder
+
+WORKDIR /app
+
+COPY pixi.toml pixi.lock ./
+RUN pixi install --locked
+
+COPY tunnel_sidecar.py ./
+
+# ── Runtime stage ─────────────────────────────────────────────────────────────
+FROM ubuntu:24.04
+
+WORKDIR /app
+
+COPY --from=builder /app/.pixi        /app/.pixi
+COPY --from=builder /app/tunnel_sidecar.py ./
+
+ENV PATH="/app/.pixi/envs/default/bin:$PATH"
+
+EXPOSE 8081
+
+CMD ["python", "tunnel_sidecar.py"]

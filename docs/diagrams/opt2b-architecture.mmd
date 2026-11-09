@@ -1,0 +1,22 @@
+flowchart LR
+  A((Analyst))
+  subgraph sf["Snowflake warehouse"]
+    direction TB
+    T[("Ciphertext table<br/>AES-256-GCM")]
+    MP["Masking policy / view<br/>DECRYPT_RAW(value, GET_KEY('salary'))"]
+    subgraph q["One query"]
+      direction LR
+      P1["Python UDF process 1<br/>module-level key memo"]
+      P2["Python UDF process 2<br/>module-level key memo"]
+      PN["… one per parallel process"]
+    end
+    EAI["External Access Integration<br/>network rule · secret / OAuth"]
+    T --> MP --> P1 & P2 & PN
+    P1 & P2 & PN --> EAI
+  end
+  subgraph owner["Data owner"]
+    V[("Key vault / KMS / HSM<br/>authorizes the integration")]
+  end
+  A -->|"SELECT"| T
+  EAI -->|"one fetch per process per query<br/>(PrivateLink possible)"| V
+  V -->|"data key → process memory,<br/>discarded when the query ends"| EAI

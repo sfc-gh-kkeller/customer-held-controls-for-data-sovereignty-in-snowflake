@@ -1,0 +1,25 @@
+flowchart LR
+  subgraph onprem["On-premise (data owner)"]
+    CTL["tunnel_ctl.py up --ttl 15m --reason ...<br/>audit log · hard TTL"]
+    AG["onpremise_agent.py"]
+    LK["Lakekeeper<br/>Iceberg REST :8181"]
+    S3[("S3-compatible store :9000<br/>employees_sensitive")]
+    CTL -->|spawns / kills| AG
+    AG --- LK
+    AG --- S3
+  end
+  subgraph sf["Snowflake account"]
+    subgraph spcs["SPCS service TUNNEL_SERVICE"]
+      SC["tunnel-sidecar :8081<br/>PAT→OAuth · RSA+AES session"]
+      IA["iceberg-agent :8090<br/>DuckDB · Iceberg proxy"]
+      SC -- localhost:8181/9000 --> IA
+    end
+    F["QUERY_ONPREM()<br/>VOLATILE + UUID nonce"]
+    V["EMPLOYEES_SENSITIVE_LIVE<br/>secure view"]
+    P[("EMPLOYEES_PUBLIC<br/>native table")]
+    NB["Snowflake Notebook<br/>DuckDB direct"]
+    V --> F --> IA
+    NB --> IA
+    V -. join .- P
+  end
+  AG == "outbound WSS only<br/>(no inbound ports)" ==> SC

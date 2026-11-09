@@ -1,0 +1,15 @@
+flowchart LR
+  subgraph you["Your building"]
+    E["Lock the data<br/>before upload"]
+    APP["Your app<br/>🔑 only key"]
+    A((Analyst))
+  end
+  subgraph sf["Snowflake"]
+    L[("Locked data<br/>🔒 unreadable")]
+  end
+  E -->|"1. upload locked data"| L
+  A -->|"2. signs in to your app"| APP
+  L -->|"3. app fetches locked data"| APP
+  APP -->|"4. unlocks it on your machine,<br/>shows the analyst"| A
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class APP key

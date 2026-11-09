@@ -1,0 +1,29 @@
+[workspace]
+authors = ["Kevin Keller <kellerkev@gmail.com>"]
+channels = ["conda-forge"]
+name = "secure-analytics"
+platforms = ["win-64", "osx-arm64", "osx-64", "linux-64"]
+version = "0.2.0"
+
+[tasks]
+setup = "bash setup_demo.sh"
+app = "streamlit run app.py"
+test = "pytest -q tests"
+
+[dependencies]
+python = "3.13.*"
+streamlit = ">=1.66,<2"
+authlib = ">=1.3"                # streamlit[auth] extra for st.login()
+python-duckdb = ">=2.0,<3"
+cryptography = ">=46"
+pandas = ">=2.3"
+pyarrow = ">=20"
+plotly = ">=6.3"
+sqlalchemy = ">=2.0"
+psycopg2-binary = ">=2.9"
+pyyaml = ">=6.0"
+sqlglot = ">=27"
+pytest = ">=8"
+
+[pypi-dependencies]
+adbc-driver-snowflake = ">=1.11"

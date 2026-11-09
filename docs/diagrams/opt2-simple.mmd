@@ -1,0 +1,17 @@
+flowchart LR
+  A((Analyst))
+  subgraph sf["Snowflake"]
+    L[("Locked data<br/>🔒 unreadable")]
+  end
+  subgraph you["Your key safe (your AWS)"]
+    G["Gatekeeper"]
+    K["🔑 Key"]
+  end
+  A -->|"1. proves identity on phone<br/>and says why"| G
+  A -->|"2. runs a query"| L
+  L -->|"3. asks for the key"| G
+  G -->|"4. checks: approved person?<br/>query really running?"| K
+  K -->|"5. key lent for this<br/>one query only"| L
+  L -->|"6. readable answer"| A
+  classDef key fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class G,K key

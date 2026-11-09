@@ -1,0 +1,30 @@
+[workspace]
+name = "sovereignty-byok-keybroker"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
+
+[tasks]
+# The Snowflake user defaults to $DEMO_USER (export DEMO_USER=<your Snowflake user>).
+# Enroll (or re-enroll = rotate) a user's TOTP secret and print an ASCII QR code for the authenticator app.
+#   pixi run enroll                 -> $DEMO_USER, salary+pii
+#   pixi run enroll ALICE salary
+enroll  = { cmd = "python client/enroll_user.py {{ user }} --classes {{ classes }}", args = [{ arg = "user", default = "" }, { arg = "classes", default = "salary,pii" }] }
+# Show the QR again from the saved secret, without rotating it
+totp-qr = { cmd = "python client/enroll_user.py {{ user }} --show", args = [{ arg = "user", default = "" }] }
+# Current 6-digit code (handy if the phone isn't at hand)
+totp-now = { cmd = "python -c \"import os,pyotp,pathlib;u=('{{ user }}' or os.getenv('DEMO_USER','')).upper();print(pyotp.TOTP(pathlib.Path(f'.secrets/totp_{u}.txt').read_text().strip()).now())\"", args = [{ arg = "user", default = "" }] }
+portal  = { cmd = "python client/portal_qr.py --open" }   # URL + terminal QR + opens a QR page to scan
+demo    = { cmd = "python client/demo.py" }
+test    = { cmd = "pytest -q tests" }
+
+[dependencies]
+python = "3.13.*"
+boto3 = ">=1.35"
+cryptography = ">=43"
+pyotp = ">=2.9"
+qrcode = ">=7.4"
+snowflake-connector-python = ">=3.12"
+pytest = ">=8"
+
+[pypi-dependencies]
+botocore = { version = ">=1.35", extras = ["crt"] }   # needed for `aws login` credentials

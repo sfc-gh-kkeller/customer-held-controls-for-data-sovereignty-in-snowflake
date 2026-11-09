@@ -1,0 +1,20 @@
+flowchart LR
+  Q1{"Sensitive data may be<br/>stored in Snowflake,<br/>even encrypted?"}
+  Q2{"Users need the<br/>Snowflake UX?"}
+  Q3{"Only arithmetic<br/>needed?"}
+  Q4{"Read plaintext inside<br/>the Snowflake UX?"}
+  O1["Option 1<br/>On-demand tunnel"]
+  O3["Option 3<br/>Local join"]
+  HE["Bonus<br/>Homomorphic"]
+  O2["Option 2<br/>Key broker + step-up"]
+  O4["Option 4<br/>Client-side decrypt app"]
+  Q1 -- no --> Q2
+  Q2 -- yes --> O1
+  Q2 -- no --> O3
+  Q1 -- "yes, with my key" --> Q3
+  Q3 -- yes --> HE
+  Q3 -- "no, values must be read" --> Q4
+  Q4 -- yes --> O2
+  Q4 -- "no, on-prem app" --> O4
+  classDef opt fill:#29B5E8,stroke:#11567F,color:#ffffff,font-weight:bold
+  class O1,O2,O3,O4,HE opt

@@ -1,0 +1,23 @@
+sequenceDiagram
+  autonumber
+  actor A as Analyst
+  participant P as Step-up portal
+  participant SF as Snowflake query
+  participant EF as SOV_GET_KEY (ext fn)
+  participant B as Key broker (Lambda)
+  participant D as DynamoDB grants
+  participant QH as Snowflake QUERY_HISTORY
+  participant K as KMS
+  A->>P: user, TOTP, justification, 15 min
+  P->>D: put grant (expires_at)
+  A->>SF: SELECT AVG(salary) ...
+  SF->>EF: masking policy evaluates
+  EF->>B: POST /key  [sf-external-function-current-query-id, sf-context-current-user/role/account]
+  B->>D: grant for (user, salary) valid?
+  B->>QH: query_id RUNNING for user + role?
+  QH-->>B: RUNNING, ANALYST1, SOV_ANALYST
+  B->>K: Decrypt(wrapped data key)
+  B-->>EF: base64 key (decision cached 10 s per query_id)
+  EF-->>SF: key → DECRYPT_RAW(AES-GCM) in SQL
+  SF-->>A: plaintext result
+  Note over B,QH: Query finished → same query_id is refused (replay protection)

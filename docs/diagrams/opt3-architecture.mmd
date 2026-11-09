@@ -1,0 +1,14 @@
+flowchart LR
+  subgraph sf["Snowflake"]
+    PUB[("OPT3_SPLIT.EMPLOYEES_PUBLIC<br/>department, country, level ...")]
+    AGG[("OPT3_SPLIT.SALARY_BANDS_AGG<br/>k ≥ 5 aggregates only")]
+  end
+  subgraph onprem["On-premise"]
+    NB["Jupyter notebook<br/>local_join.ipynb"]
+    DDB["DuckDB in-memory join"]
+    LAKE[("Iceberg lake<br/>employees_sensitive<br/>names · IBAN · salary")]
+    NB --> DDB
+    LAKE --> DDB
+  end
+  PUB -- "SELECT (non-sensitive)" --> NB
+  DDB -- "write_pandas (aggregates only)" --> AGG

@@ -1,0 +1,28 @@
+[workspace]
+name = "sovereignty-opt2c-device-flow"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
+
+[tasks]
+# Deploy AWS (mock IdP + broker) and create the Snowflake objects
+setup    = { cmd = "bash setup.sh" }
+# Unit tests (no AWS, no Snowflake)
+test     = { cmd = "pytest -q tests" }
+# Bake-off part 1: self-id join correctness across contexts (Snowflake only)
+bench-selfid = { cmd = "python bench/selfid_contexts.py {{ runs }}", args = [{ arg = "runs", default = "20" }] }
+# Bake-off part 2: mode A vs mode B through the broker (latency, call-backs, reliability)
+bench    = { cmd = "python bench/bench_bind.py {{ runs }}", args = [{ arg = "runs", default = "15" }] }
+# End-to-end device flow from the terminal (opens the IdP page, waits for approval, decrypts)
+e2e      = { cmd = "python bench/e2e.py" }
+idp-url  = { cmd = "python -c \"import json;print(json.load(open('../opt2-keybroker/infra/outputs.json'))['SovereigntyKeyBroker']['Opt2cIdpUrl'] + 'device')\"" }
+
+[dependencies]
+python = "3.13.*"
+boto3 = ">=1.35"
+pyjwt = ">=2.9"
+pyotp = ">=2.9"
+snowflake-connector-python = ">=3.12"
+pytest = ">=8"
+
+[pypi-dependencies]
+botocore = { version = ">=1.35", extras = ["crt"] }
