@@ -63,6 +63,13 @@ sync results into governed Snowflake tables.
 | D | `query_iceberg_to_table` UDF | Yes (explicit) | ✅ Full Horizon |
 | E | `sync_and_query` stored proc | Yes (explicit) | ✅ Full Horizon |
 
+Options A and B (Option 1b, `notebooks/tunnel_direct_read.ipynb`) bypass Snowflake's query engine entirely: a
+Snowflake Notebook or a custom notebook on SPCS (Jupyter, marimo) queries through the tunnel with DuckDB, so no
+query result or result cache exists in Snowflake. The cost is the warehouse's compute power and elasticity. The demo
+does not pass the notebook user's identity through to the on-prem catalog. See
+[docs/01-tunnel.md](../docs/01-tunnel.md#option-1b--a-notebook-and-your-own-query-engine-bypassing-snowflakes-query-engine)
+for the trade-offs and ways to close that gap.
+
 ---
 
 ## Prerequisites

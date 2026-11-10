@@ -188,6 +188,36 @@ Data that may **not be stored** in a foreign cloud, but still needs to be querie
 
 ---
 
+## Option 1b – Notebook and own query engine through the tunnel
+
+A Snowflake Notebook or a custom notebook on SPCS (Jupyter, marimo) queries through the tunnel with **DuckDB**,
+bypassing Snowflake's query engine: **no query result, no result cache, nothing to `RESULT_SCAN`**.
+
+<div class="cols">
+<div class="pro">
+
+### Gained
+- Nothing about the sensitive data is stored in Snowflake, not even a cached result
+- The Snowflake experience is kept with Snowflake Notebooks
+- Any engine: DuckDB, PyIceberg, Polars …
+
+</div>
+<div class="con">
+
+### Lost
+- The compute power of Snowflake's query engine: one notebook container does the work
+- On-demand elasticity (warehouse scaling, multi-cluster)
+- Snowflake governance on this data path
+
+</div>
+</div>
+
+**Not in the demo yet: passing the user's identity through to the on-prem source** (e.g. an Iceberg catalog). Options:
+out of band, a device-code token from an external identity provider started from the notebook (as in 2c), or a proof
+of the Snowflake identity taken from the user context or notebook secrets. One Iceberg pattern is planned.
+
+---
+
 <!-- _class: divider -->
 
 # Option 2

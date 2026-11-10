@@ -84,6 +84,39 @@ sensitive data with Snowflake data, in memory only*.
 | `QUERY_ONPREM()` / `EMPLOYEES_SENSITIVE_LIVE` | no | **never** (nonce + VOLATILE) | RBAC on function/view |
 | `query_iceberg_to_table()` (original) | yes, explicitly | yes | full Horizon |
 
+## Option 1b – a notebook and your own query engine, bypassing Snowflake's query engine
+
+Customers can run a notebook on Snowpark Container Services and query through the tunnel with their own engine,
+such as DuckDB. The notebook can be a Snowflake Notebook or a custom one on SPCS, such as Jupyter or marimo. No SQL
+then runs on Snowflake's own query engine (the virtual warehouse) for the sensitive data. There is no query result,
+so nothing reaches the result cache, `RESULT_SCAN` or the query history results. The data exists only in the
+notebook container's memory while the session runs. With a Snowflake Notebook, users keep the familiar Snowflake
+experience: the editor, Snowflake sign-in and RBAC, and the joins with Snowflake data in the same notebook.
+
+Demo: `notebooks/tunnel_direct_read.ipynb`, set up with `snowflake/20_notebook.sql`.
+
+**Trade-offs**
+
+| Gained | Lost |
+| --- | --- |
+| No query result and no result cache in Snowflake for the sensitive data | The compute power of Snowflake's query engine: the work is limited to one notebook container |
+| The Snowflake experience is kept with Snowflake Notebooks | On-demand elasticity: no warehouse scaling, query acceleration or multi-cluster |
+| Any engine the customer chooses (DuckDB, PyIceberg, Polars, …) | Snowflake governance on that data path: no masking or row access policies, and no access history of the reads themselves |
+
+**Gap: passing the user's identity through to the data source.** The demo authenticates to the on-prem Iceberg
+catalog with the agent's own credentials. It does not pass the notebook user's identity through to the on-prem
+source. In a real deployment that has to be solved in one of these ways:
+
+- **out of band**, for example with on-prem access control on the agent or the catalog side;
+- with a **token from an external identity provider**, for example through an OAuth device-code flow started from
+  the notebook (with helper functions or UDFs), similar to Option 2c;
+- by engineering a **proof of the Snowflake identity** that the source can check, for example from the Snowflake
+  user context, request headers in SPCS, or secrets made available to the notebook.
+
+The demo does not cover this, because on-prem data sources behind the tunnel, and their authentication
+requirements, vary widely. A future addition is planned: one example pattern for seamless Iceberg catalog
+authentication from a notebook on SPCS.
+
 ## Possible next steps
 
 * Schedule `tunnel-up` from an approval workflow (ServiceNow, a Slack approval) instead of manually.
