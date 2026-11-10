@@ -70,12 +70,57 @@ Each option's folder has its own README with details and troubleshooting.
 
 ## Prerequisites
 
-- A Snowflake account (Enterprise or higher; Option 1 needs Snowpark Container Services) and a role that can create
-  databases, roles, integrations and compute pools (`ACCOUNTADMIN` in the demo).
-- [Snowflake CLI](https://docs.snowflake.com/developer-guide/snowflake-cli/index) (`snow`) with a configured connection,
-  [pixi](https://pixi.sh), [uv](https://docs.astral.sh/uv/), Docker (Option 1 lake and CDK bundling), and Node.js
-  (`npx`, for AWS CDK and the diagram tools).
-- For Options 2 and 2c: an AWS account and a logged-in AWS CLI. The stack deploys to `eu-central-1`.
+**Accounts**
+
+- A Snowflake account (Enterprise or higher; Option 1 and 1b need Snowpark Container Services) and a role that can
+  create databases, roles, users, integrations, network policies and compute pools (`ACCOUNTADMIN` in the demo).
+- For Options 2, 2b and 2c: an AWS account where you can deploy a CloudFormation stack (KMS, Lambda, API Gateway,
+  DynamoDB, Secrets Manager). The stack deploys to `eu-central-1`.
+
+**Tools and which options need them**
+
+| Tool | Needed for | Why |
+| --- | --- | --- |
+| [Snowflake CLI](https://docs.snowflake.com/developer-guide/snowflake-cli/index) (`snow`) 3.x | all | runs the SQL and setup scripts |
+| [pixi](https://pixi.sh) | all | creates each option's Python environment and runs its tasks |
+| Git, Bash, OpenSSL | all | clone; setup scripts; key pairs |
+| [uv](https://docs.astral.sh/uv/) | 2, 2c | Python environment for the CDK app |
+| Node.js 22 or 24 LTS | 2, 2c | `npx aws-cdk`; Marp for rebuilding the deck |
+| [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) v2 | 2, 2b, 2c | log in and deploy the stack |
+| Docker (running) | 1, 2, 2c | Option 1 images and on-prem lake; CDK Lambda bundling |
+
+Each option has its own `pixi.toml`, so there is nothing to install per option: the first `pixi run …` in a folder
+builds that folder's environment.
+
+**Install on macOS** (Homebrew):
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | sh          # pixi (restart the shell afterwards)
+brew install snowflake-cli uv node@22 awscli openssl git
+brew install --cask docker                           # then start Docker Desktop
+```
+
+**Install on Linux** (Debian/Ubuntu shown):
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install snowflake-cli                        # provides `snow`
+sudo apt-get install -y git openssl docker.io nodejs npm   # or Node 22 from nodesource / nvm
+# AWS CLI v2: see the AWS install guide linked above
+```
+
+On Windows, use WSL2 with the Linux steps.
+
+**Configure and check**
+
+```bash
+snow connection add                                  # or edit ~/.snowflake/config.toml
+snow connection test -c <your connection name>
+aws login                                            # or aws configure sso / aws sso login
+aws sts get-caller-identity
+docker info >/dev/null && echo "docker ok"
+```
 
 Configuration is read from the environment; nothing account-specific is stored in the repository:
 
@@ -83,6 +128,17 @@ Configuration is read from the environment; nothing account-specific is stored i
 export SNOW_CONNECTION=<your snow connection name>   # default: "default"
 export DEMO_USER=<your Snowflake user>               # user enrolled for TOTP step-up (Options 2 / 2c)
 ```
+
+**Known issues**
+
+- **Network policies:** if your account has an account-level network policy, the setup scripts give the demo
+  service users their own policies. Pass the IPs your laptop or on-prem agent connects from with
+  `ONPREM_IP=a.b.c.d/32` (Option 1) or `APP_IP=a.b.c.d/32` (Option 4).
+- **`aws login` credentials and Python:** credentials from `aws login` need the `awscrt` package, which the pixi
+  environments do not include. If a client script fails with `Missing Dependency ... botocore[crt]`, export the
+  session credentials first: `eval "$(aws configure export-credentials --format env)"`.
+- **Node.js newer than 24:** CDK prints an "untested Node version" warning; silence it with
+  `export JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION=1`.
 
 ## Set up and run
 
