@@ -34,4 +34,5 @@ opt2-keybroker/infra/outputs.json
 summary.txt
 
 # white paper is published separately
-whitepaper/
+whitepaper/*
+!whitepaper/customer-held-controls-for-data-sovereignty-in-snowflake.pdf

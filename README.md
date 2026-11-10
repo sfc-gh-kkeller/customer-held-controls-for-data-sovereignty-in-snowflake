@@ -8,7 +8,7 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 > inspiration. They are not official Snowflake solutions, not reviewed or endorsed by Snowflake, not supported, and
 > not production-hardened. Review them with your security and legal teams before you adapt anything.
 
-**Slides:** [docs/deck.pdf](docs/deck.pdf) · **Overview, threat model and decision guide:** [docs/00-overview.md](docs/00-overview.md)
+**White paper (personal publication, PDF):** [whitepaper/customer-held-controls-for-data-sovereignty-in-snowflake.pdf](whitepaper/customer-held-controls-for-data-sovereignty-in-snowflake.pdf) · **Slides:** [docs/deck.pdf](docs/deck.pdf) · **Overview, threat model and decision guide:** [docs/00-overview.md](docs/00-overview.md)
 
 ## The options in one line each
 
