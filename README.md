@@ -4,8 +4,9 @@ Runnable demos and reference architectures that keep the most sensitive data und
 while Snowflake stays the analytics platform. Each option puts a different thing in the customer's hands: the
 **data**, the **key** or the **switch**.
 
-> Demo and reference architecture for education and discussion. It is not a Snowflake product, not supported, and
-> not production-hardened. Review it with your security and legal teams before you adapt it.
+> **Personal project by Kevin Keller**, who works at Snowflake. These are "art of the possible" examples for
+> inspiration. They are not official Snowflake solutions, not reviewed or endorsed by Snowflake, not supported, and
+> not production-hardened. Review them with your security and legal teams before you adapt anything.
 
 **Slides:** [docs/deck.pdf](docs/deck.pdf) · **Overview, threat model and decision guide:** [docs/00-overview.md](docs/00-overview.md)
 

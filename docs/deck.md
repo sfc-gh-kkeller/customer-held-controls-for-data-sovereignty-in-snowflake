@@ -45,6 +45,8 @@ footer: Customer-held controls for data sovereignty · demo on Snowflake + on-pr
 
 Four architecture options and one bonus, each built and demonstrated end to end
 
+<span class="small" style="color:#fff">Kevin Keller, Principal at Snowflake – personal work. "Art of the possible" examples for inspiration; not official Snowflake solutions and not endorsed by Snowflake.</span>
+
 ---
 
 ## The question behind every option
