@@ -637,9 +637,9 @@ No inbound firewall ports.</li>
 <li>Analysts query <code>EMPLOYEES_SENSITIVE_LIVE</code> – a secure view over <code>QUERY_ONPREM()</code>, which proxies to<br />
 DuckDB reading the Iceberg tables on-prem.</li>
 <li><code>VOLATILE</code> + <code>UUID_STRING()</code> nonce: every query goes through the tunnel; there is no result cache hit.</li>
-<li>TTL expires or <code>tunnel-down</code> → the next query simply fails. Nothing to delete in Snowflake.</li>
+<li>TTL expires or <code>tunnel-down</code> → the next query returns no data (the view is empty; the function returns the agent's connection error as a value). Nothing to delete in Snowflake.</li>
 </ol>
-<p class="small">Verified: join of Snowflake public data + on-prem sensitive data, 200 rows; four identical runs, never cached; after tunnel-down: connection refused.</p>
+<p class="small">Verified: join of Snowflake public data + on-prem sensitive data, 200 rows; four identical runs, never cached; after tunnel-down: no data (0 rows, connection error returned as a value).</p>
 <footer>Customer-held controls for data sovereignty · demo on Snowflake + on-prem + AWS</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-paginate="true" data-footer="Customer-held controls for data sovereignty · demo on Snowflake + on-prem + AWS" data-theme="default" data-style="section { font-family: Arial, Helvetica, sans-serif; font-size: 22px; color: #262626; padding: 40px 56px; }
@@ -1284,7 +1284,7 @@ footer { font-size: 12px; color: #5B5B5B; }
 <ul>
 <li>While a query runs, the key and plaintext exist in Snowflake compute memory</li>
 <li>An authorized user can still copy what they see (CTAS, export) – could be reduced with additional controls</li>
-<li>Extra latency: about 5 s per query for the RUNNING call-back</li>
+<li>Latency: about 4 s per decrypting query (plaintext 0.1 s), incl. the RUNNING call-back</li>
 <li>AWS stack to operate: KMS, Lambda, API Gateway, DynamoDB, API integration</li>
 <li>Encrypted columns can't be filtered or joined on without decryption</li>
 </ul>
@@ -3322,7 +3322,7 @@ footer { font-size: 12px; color: #5B5B5B; }
 <tr>
 <td><strong>Performance</strong></td>
 <td>network-bound</td>
-<td>native + ~5 s per query</td>
+<td>~4 s per query</td>
 <td>local host</td>
 <td>pull + decrypt locally</td>
 <td>heavy</td>
@@ -3520,7 +3520,7 @@ footer { font-size: 12px; color: #5B5B5B; }
 <tr>
 <td>1</td>
 <td><code>pixi run tunnel-up 15m &quot;demo&quot;</code></td>
-<td>public table → live join through the tunnel → <code>tunnel-down</code> → query fails</td>
+<td>public table → live join through the tunnel → <code>tunnel-down</code> → query returns no data</td>
 </tr>
 <tr>
 <td>2</td>

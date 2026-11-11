@@ -1,0 +1,54 @@
+{
+  "name": "he",
+  "ts": "2026-11-10T14:59:21",
+  "rows": 100,
+  "per_row_ct_sum_by_dept": {
+    "first_ms": 5487,
+    "query": {
+      "n": 10,
+      "p50": 2863,
+      "p95": 3099,
+      "min": 2633,
+      "max": 3099,
+      "mean": 2850
+    },
+    "decrypt": {
+      "n": 10,
+      "p50": 3,
+      "p95": 10,
+      "min": 2,
+      "max": 10,
+      "mean": 4
+    }
+  },
+  "packed_simd_total": {
+    "first_ms": 2106,
+    "query": {
+      "n": 10,
+      "p50": 1514,
+      "p95": 1790,
+      "min": 1392,
+      "max": 1790,
+      "mean": 1533
+    },
+    "decrypt": {
+      "n": 10,
+      "p50": 1,
+      "p95": 2,
+      "min": 1,
+      "max": 2,
+      "mean": 1
+    }
+  },
+  "sample": [
+    [
+      "Engineering",
+      173979
+    ],
+    [
+      "Finance",
+      135081
+    ]
+  ],
+  "packed_total": 13996222
+}

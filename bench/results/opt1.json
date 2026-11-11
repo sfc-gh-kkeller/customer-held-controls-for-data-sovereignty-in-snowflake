@@ -1,0 +1,105 @@
+{
+  "name": "opt1",
+  "ts": "2026-11-10T15:10:55",
+  "tunnel_up_to_first_answer_ms": {
+    "n": 1,
+    "p50": 14235,
+    "p95": 14235,
+    "min": 14235,
+    "max": 14235,
+    "mean": 14235
+  },
+  "point_lookup": {
+    "first_ms": 241,
+    "wall": {
+      "n": 10,
+      "p50": 237,
+      "p95": 273,
+      "min": 219,
+      "max": 273,
+      "mean": 240
+    },
+    "server": {
+      "n": 10,
+      "p50": 203,
+      "p95": 241,
+      "min": 187,
+      "max": 241,
+      "mean": 205
+    },
+    "rows": 1,
+    "sample": [
+      [
+        "[\n  [\n    84443\n  ]\n]"
+      ]
+    ]
+  },
+  "join_aggregate_200": {
+    "first_ms": 345,
+    "wall": {
+      "n": 10,
+      "p50": 324,
+      "p95": 447,
+      "min": 296,
+      "max": 447,
+      "mean": 331
+    },
+    "server": {
+      "n": 10,
+      "p50": 270,
+      "p95": 388,
+      "min": 250,
+      "max": 388,
+      "mean": 277
+    },
+    "rows": 6,
+    "sample": [
+      [
+        "Engineering",
+        "23",
+        "100486"
+      ],
+      [
+        "Finance",
+        "29",
+        "90121"
+      ]
+    ]
+  },
+  "extract_200": {
+    "first_ms": 263,
+    "wall": {
+      "n": 10,
+      "p50": 261,
+      "p95": 276,
+      "min": 232,
+      "max": 276,
+      "mean": 258
+    },
+    "server": {
+      "n": 10,
+      "p50": 224,
+      "p95": 236,
+      "min": 201,
+      "max": 236,
+      "mean": 221
+    },
+    "rows": 1,
+    "sample": [
+      [
+        "200",
+        "19257363"
+      ]
+    ]
+  },
+  "after_down_point": "no data, function returned the error as a value: \"IO Error: Could not connect to server error for HTTP GET to 'http://localhost:8181/catalo",
+  "after_down_ms": {
+    "n": 1,
+    "p50": 685,
+    "p95": 685,
+    "min": 685,
+    "max": 685,
+    "mean": 685
+  },
+  "after_down_view_rows": 0
+}

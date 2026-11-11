@@ -64,10 +64,13 @@ def _check_grant(user: str, cls: str) -> tuple[bool, str]:
 
 
 def _check_query_running(query_id: str, user: str, role: str) -> tuple[bool, str]:
+    # A time window keeps the lookup fast: RESULT_LIMIT alone scans the user's last 1000 queries (~8-10 s for a
+    # busy user), while END_TIME_RANGE_START answers in ~0.3 s. Running queries (no end time yet) are included.
     rows = _sf_client().query(
         "SELECT execution_status, user_name, role_name "
         "FROM TABLE(SOVEREIGNTY_DEMO.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
-        "USER_NAME => ?, RESULT_LIMIT => 1000)) WHERE query_id = ?",
+        "USER_NAME => ?, END_TIME_RANGE_START => DATEADD(minute, -10, CURRENT_TIMESTAMP()), "
+        "RESULT_LIMIT => 1000)) WHERE query_id = ?",
         [user, query_id])
     if not rows:
         return False, "query_not_found"

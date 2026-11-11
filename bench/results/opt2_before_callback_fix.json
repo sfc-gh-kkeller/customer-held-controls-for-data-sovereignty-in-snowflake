@@ -1,0 +1,124 @@
+{
+  "name": "opt2",
+  "ts": "2026-11-10T14:53:17",
+  "denied_no_grant": {
+    "first_ms": 3348,
+    "wall": {
+      "n": 3,
+      "p50": 3245,
+      "p95": 3483,
+      "min": 2789,
+      "max": 3483,
+      "mean": 3172
+    },
+    "server": {
+      "n": 3,
+      "p50": 3215,
+      "p95": 3453,
+      "min": 2759,
+      "max": 3453,
+      "mean": 3142
+    },
+    "rows": 6,
+    "sample": [
+      [
+        "Engineering",
+        "23",
+        "None"
+      ],
+      [
+        "Finance",
+        "29",
+        "None"
+      ]
+    ]
+  },
+  "stepup_grant_ms": {
+    "n": 2,
+    "p50": 252,
+    "p95": 366,
+    "min": 138,
+    "max": 366,
+    "mean": 252
+  },
+  "stepup_responses": [
+    {
+      "ok": true,
+      "message": "Granted 'salary' to <DEMO_USER> for 15 min (until 14:02:48 UTC)"
+    },
+    {
+      "ok": true,
+      "message": "Granted 'pii' to <DEMO_USER> for 15 min (until 14:02:48 UTC)"
+    }
+  ],
+  "aggregate_200": {
+    "first_ms": 15103,
+    "wall": {
+      "n": 10,
+      "p50": 14574,
+      "p95": 16485,
+      "min": 14007,
+      "max": 16485,
+      "mean": 14761
+    },
+    "server": {
+      "n": 10,
+      "p50": 14532,
+      "p95": 16062,
+      "min": 13972,
+      "max": 16062,
+      "mean": 14681
+    },
+    "rows": 6,
+    "sample": [
+      [
+        "Engineering",
+        "23",
+        "100486"
+      ],
+      [
+        "Finance",
+        "29",
+        "90121"
+      ]
+    ]
+  },
+  "rows_200_x3_cols": {
+    "first_ms": 25887,
+    "wall": {
+      "n": 5,
+      "p50": 27277,
+      "p95": 28666,
+      "min": 26633,
+      "max": 28666,
+      "mean": 27602
+    },
+    "server": {
+      "n": 5,
+      "p50": 27236,
+      "p95": 28617,
+      "min": 26592,
+      "max": 28617,
+      "mean": 27523
+    },
+    "rows": 200,
+    "sample": [
+      [
+        "1",
+        "Paul Schneider",
+        "DE969036041610782387",
+        "65149"
+      ],
+      [
+        "2",
+        "Emma Fischer",
+        "AT356853639772802993",
+        "95520"
+      ]
+    ]
+  },
+  "revoke": {
+    "before": "not revoked (ClientError); grants expire after their TTL",
+    "after": "not revoked (ClientError); grants expire after their TTL"
+  }
+}

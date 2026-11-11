@@ -1,0 +1,11 @@
+{
+  "name": "opt1b",
+  "ts": "2026-11-10T15:18:34",
+  "headless_run_incl_pool_start_ms": {"n": 1, "p50": 147678, "p95": 147678, "min": 147678, "max": 147678, "mean": 147678},
+  "inside_notebook_ms": {
+    "duckdb_join_through_tunnel": {"max": 47, "n": 10, "p50": 38},
+    "duckdb_read_200": {"max": 47, "n": 10, "p50": 35},
+    "pull_public_snowpark": {"max": 213, "n": 5, "p50": 150}
+  },
+  "note": "inside_notebook = DuckDB in the notebook container, through the tunnel. First run recorded by hand (EXECUTE CODE BUNDLE from the CLI, query 01c851b8-0209-60da-0000-ed69094aa3be); b_opt1b.py reproduces it."
+}

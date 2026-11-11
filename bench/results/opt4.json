@@ -1,0 +1,59 @@
+{
+  "name": "opt4",
+  "ts": "2026-11-10T14:59:33",
+  "connect_ms": {
+    "n": 1,
+    "p50": 1186,
+    "p95": 1186,
+    "min": 1186,
+    "max": 1186,
+    "mean": 1186
+  },
+  "first_ms": 455,
+  "end_to_end": {
+    "n": 10,
+    "p50": 109,
+    "p95": 333,
+    "min": 71,
+    "max": 333,
+    "mean": 130
+  },
+  "fetch_ciphertext": {
+    "n": 10,
+    "p50": 100,
+    "p95": 320,
+    "min": 58,
+    "max": 320,
+    "mean": 119
+  },
+  "decrypt_1000_cells": {
+    "n": 10,
+    "p50": 4,
+    "p95": 8,
+    "min": 3,
+    "max": 8,
+    "mean": 5
+  },
+  "duckdb_aggregate": {
+    "n": 10,
+    "p50": 7,
+    "p95": 8,
+    "min": 5,
+    "max": 8,
+    "mean": 7
+  },
+  "rows": 200,
+  "decrypt_failures": 0,
+  "sample": [
+    [
+      "Engineering",
+      "23",
+      "100486.0"
+    ],
+    [
+      "Finance",
+      "29",
+      "90121.0"
+    ]
+  ]
+}

@@ -125,10 +125,11 @@ pixi run enroll <SNOWFLAKE_USER> # scan QR with an authenticator app
 classification (`salary`, `pii`), with 1 row each**. That's **2 call-backs to Snowflake in total**.
 `IMMUTABLE` plus a constant argument means the key is fetched once per distinct key per query, not per row.
 
-**Latency:** a fresh decision takes about 5 s, dominated by `INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER`. The data
-key unwrap is cached in the Lambda, and denials short-circuit in milliseconds. Not yet measured: whether a
-smaller `RESULT_LIMIT` or `QUERY_HISTORY_BY_WAREHOUSE` would be faster. A warm, dedicated warehouse for the
-broker would avoid any resume delay.
+**Latency:** a decrypting query over 200 rows takes about 4 s (p50, X-Small warehouse; plaintext 0.1 s); most of
+it is the external function round trip, and a denied query takes about 3.3 s. The call-back limits
+`QUERY_HISTORY_BY_USER` with `END_TIME_RANGE_START` (last 10 minutes): with only `RESULT_LIMIT => 1000` it took
+8–10 s for a busy user and the query 14.6 s. Running queries are still found. The data key unwrap is cached in
+the Lambda. A warm, dedicated warehouse for the broker would avoid any resume delay. See `bench/RESULTS.md`.
 
 Also verified:
 

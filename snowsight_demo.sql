@@ -42,7 +42,8 @@ SELECT * FROM OPT1_TUNNEL.EMPLOYEES_PUBLIC LIMIT 10;
 -- 1b. The "sensitive" view holds no data – it is just a call through the tunnel.
 SELECT GET_DDL('VIEW', 'SOVEREIGNTY_DEMO.OPT1_TUNNEL.EMPLOYEES_SENSITIVE_LIVE');
 
--- 1c. Tunnel state. SUSPENDED / agent offline  ->  the next query fails: the data simply is not reachable.
+-- 1c. Tunnel state. Agent offline  ->  no data: the view returns 0 rows and QUERY_ONPREM returns the
+--     agent's connection error as a value (no SQL error). The data simply is not reachable.
 SHOW SERVICES LIKE 'TUNNEL_SERVICE' IN SCHEMA OPT1_TUNNEL;
 -- ALTER SERVICE OPT1_TUNNEL.TUNNEL_SERVICE RESUME;   -- only if you didn't use tunnel_ctl --suspend-service
 

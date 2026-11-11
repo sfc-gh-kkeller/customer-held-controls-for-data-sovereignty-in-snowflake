@@ -1,0 +1,93 @@
+{
+  "name": "opt2c",
+  "ts": "2026-11-10T14:40:04",
+  "login_ms": {
+    "device_start": {
+      "n": 1,
+      "p50": 2669,
+      "p95": 2669,
+      "min": 2669,
+      "max": 2669,
+      "mean": 2669
+    },
+    "approve_form_post": {
+      "n": 1,
+      "p50": 271,
+      "p95": 271,
+      "min": 271,
+      "max": 271,
+      "mean": 271
+    },
+    "redeem": {
+      "n": 1,
+      "p50": 4386,
+      "p95": 4386,
+      "min": 4386,
+      "max": 4386,
+      "mean": 4386
+    },
+    "note": "approval by a person adds their reaction time; here it is a scripted form post"
+  },
+  "aggregate_200": {
+    "first_ms": 3215,
+    "wall": {
+      "n": 10,
+      "p50": 2793,
+      "p95": 3131,
+      "min": 2438,
+      "max": 3131,
+      "mean": 2808
+    },
+    "server": {
+      "n": 10,
+      "p50": 2740,
+      "p95": 3074,
+      "min": 2378,
+      "max": 3074,
+      "mean": 2750
+    },
+    "rows": 6,
+    "sample": [
+      [
+        "Engineering",
+        "23",
+        "100486"
+      ],
+      [
+        "Finance",
+        "29",
+        "90121"
+      ]
+    ]
+  },
+  "rows_200": {
+    "first_ms": 2111,
+    "wall": {
+      "n": 5,
+      "p50": 2259,
+      "p95": 2418,
+      "min": 2133,
+      "max": 2418,
+      "mean": 2257
+    },
+    "server": {
+      "n": 5,
+      "p50": 2204,
+      "p95": 2367,
+      "min": 2084,
+      "max": 2367,
+      "mean": 2205
+    },
+    "rows": 200,
+    "sample": [
+      [
+        "1",
+        "65149"
+      ],
+      [
+        "2",
+        "95520"
+      ]
+    ]
+  }
+}

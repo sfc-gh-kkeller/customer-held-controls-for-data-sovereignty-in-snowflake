@@ -1,0 +1,46 @@
+{
+  "name": "opt3",
+  "ts": "2026-11-10T15:00:35",
+  "attach_lake_ms": {
+    "n": 1,
+    "p50": 339,
+    "p95": 339,
+    "min": 339,
+    "max": 339,
+    "mean": 339
+  },
+  "first_ms": 3482,
+  "end_to_end": {
+    "n": 10,
+    "p50": 2344,
+    "p95": 3491,
+    "min": 2141,
+    "max": 3491,
+    "mean": 2549
+  },
+  "pull_public": {
+    "n": 10,
+    "p50": 83,
+    "p95": 245,
+    "min": 66,
+    "max": 245,
+    "mean": 118
+  },
+  "local_join_aggregate": {
+    "n": 10,
+    "p50": 49,
+    "p95": 128,
+    "min": 15,
+    "max": 128,
+    "mean": 53
+  },
+  "write_back_aggregates": {
+    "n": 10,
+    "p50": 2196,
+    "p95": 3138,
+    "min": 2042,
+    "max": 3138,
+    "mean": 2378
+  },
+  "rows_written": 22
+}

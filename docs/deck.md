@@ -155,9 +155,9 @@ Data that may **not be stored** in a foreign cloud, but still needs to be querie
 3. Analysts query `EMPLOYEES_SENSITIVE_LIVE` – a secure view over `QUERY_ONPREM()`, which proxies to
    DuckDB reading the Iceberg tables on-prem.
 4. `VOLATILE` + `UUID_STRING()` nonce: every query goes through the tunnel; there is no result cache hit.
-5. TTL expires or `tunnel-down` → the next query simply fails. Nothing to delete in Snowflake.
+5. TTL expires or `tunnel-down` → the next query returns no data (the view is empty; the function returns the agent's connection error as a value). Nothing to delete in Snowflake.
 
-<p class="small">Verified: join of Snowflake public data + on-prem sensitive data, 200 rows; four identical runs, never cached; after tunnel-down: connection refused.</p>
+<p class="small">Verified: join of Snowflake public data + on-prem sensitive data, 200 rows; four identical runs, never cached; after tunnel-down: no data (0 rows, connection error returned as a value).</p>
 
 ---
 
@@ -320,7 +320,7 @@ Sensitive columns (names, IDs, salaries) that should stay in Snowflake and be **
 ### Cons
 - While a query runs, the key and plaintext exist in Snowflake compute memory
 - An authorized user can still copy what they see (CTAS, export) – could be reduced with additional controls
-- Extra latency: about 5 s per query for the RUNNING call-back
+- Latency: about 4 s per decrypting query (plaintext 0.1 s), incl. the RUNNING call-back
 - AWS stack to operate: KMS, Lambda, API Gateway, DynamoDB, API integration
 - Encrypted columns can't be filtered or joined on without decryption
 
@@ -798,7 +798,7 @@ Salaries and financial numbers where you need **totals and averages**, never ind
 
 | | Opt 1 Tunnel | Opt 2 Key broker | Opt 3 Local join | Opt 4 Client decrypt | HE |
 |---|---|---|---|---|---|
-| **Performance** | network-bound | native + ~5 s per query | local host | pull + decrypt locally | heavy |
+| **Performance** | network-bound | ~4 s per query | local host | pull + decrypt locally | heavy |
 | **Operating effort** | SPCS + agent + lake | AWS stack + API integration | lowest | one app + key | moderate |
 | **Snowflake governance on sensitive rows** | RBAC on view / function | full (masking, RBAC, access history) | none (on-prem) | RBAC on ciphertext + app RBAC | RBAC, values opaque |
 | **Step-up / justification** | `--reason`, TTL, audit log | TOTP + justification, time-boxed | local access control | OIDC + app roles | n/a |
@@ -824,7 +824,7 @@ The options are independent building blocks – a customer could start with one 
 
 | # | Prepare | Show in Snowsight |
 |---|---|---|
-| 1 | `pixi run tunnel-up 15m "demo"` | public table → live join through the tunnel → `tunnel-down` → query fails |
+| 1 | `pixi run tunnel-up 15m "demo"` | public table → live join through the tunnel → `tunnel-down` → query returns no data |
 | 2 | phone with TOTP, step-up portal | viewer `**ENCRYPTED**` → analyst `**KEY DENIED**` → step-up → plaintext + averages |
 | 3 | – | Snowflake holds only non-sensitive columns + k-anonymous aggregates |
 | 4 | on-prem app (optional) | 200 rows in Snowflake as ciphertext; `AVG(salary)` NULL; app shows plaintext |

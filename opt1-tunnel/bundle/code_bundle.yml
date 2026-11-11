@@ -1,0 +1,12 @@
+# Option 1b as a Code Bundle, so the notebook can run headless (EXECUTE CODE BUNDLE), e.g. for bench/run_all.py.
+# Deploy: snow sql -c $SNOW_CONNECTION -f opt1-tunnel/snowflake/21_code_bundle.sql
+bundle:
+  type: custom
+  compute_type: compute_pool
+  language: python
+  compute_options:
+    compute_pool: SOV_NOTEBOOK_POOL
+    query_warehouse: SOV_WH
+    runtime_version: 'V2.9-CPU-PY3.12'
+  external_access_integrations:
+    - SOV_OPT1_NOTEBOOK_EAI

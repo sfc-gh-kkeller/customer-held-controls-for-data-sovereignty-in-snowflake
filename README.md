@@ -29,7 +29,7 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 | Option | Pros | Cons | Typical fit |
 | --- | --- | --- | --- |
 | **1 Tunnel** | Data is never stored in Snowflake.<br>Full Snowflake SQL and UX on live data.<br>The owner holds the on/off switch, with a TTL and audit. | Plaintext is in Snowflake while the tunnel is open.<br>Query results can be read back for 24 h with `RESULT_SCAN`. The notebook variant (1b) avoids this.<br>Speed depends on the network.<br>Needs an SPCS service, an agent and a lake. | Data that may not be stored in a foreign cloud but must stay queryable |
-| **2 Key broker** | Full Snowflake UX through masking policies.<br>Per-person, per-query, time-boxed release with a justification.<br>Replays are refused. | Plaintext is in query memory during approved queries.<br>About 5 s extra per query.<br>Needs an AWS stack (KMS, Lambda, API Gateway, DynamoDB). | Highly sensitive columns that must stay in the platform under external key control |
+| **2 Key broker** | Full Snowflake UX through masking policies.<br>Per-person, per-query, time-boxed release with a justification.<br>Replays are refused. | Plaintext is in query memory during approved queries.<br>About 4 s per decrypting query (200 rows; plaintext 0.1 s).<br>Needs an AWS stack (KMS, Lambda, API Gateway, DynamoDB). | Highly sensitive columns that must stay in the platform under external key control |
 | **2b Direct key fetch** | Minimal infrastructure.<br>The key is gone when the query ends. | The vault cannot tell who is asking or why.<br>No step-up unless you add it. | "The key stays with us" with little effort |
 | **2c Phone approval** | Per-person, per-session approval.<br>Bound to the running query.<br>About 0.3 s extra per query. | Plaintext is in query memory during approved queries.<br>Relies on behaviour that is observed but not documented (the query reading its own query ID).<br>Needs an IdP and a broker. | Option 2 controls with a lighter stack |
 | **3 Separate** | The sensitive data never reaches Snowflake. | No Snowflake UX on the sensitive part.<br>Compute is limited by the local host. | Data that must never leave the premises |
@@ -169,7 +169,7 @@ These results come from the demo account. Results that are observed but not docu
 
 | Option | Result |
 | --- | --- |
-| 1 | The join works with the tunnel up and fails with it down. Repeated runs go through the tunnel each time (no result reuse). |
+| 1 | The join works with the tunnel up; with it down the view returns no rows (the function returns the agent's connection error as a value, not a SQL error). Repeated runs go through the tunnel each time (no result reuse). |
 | 1b | The notebook reads and joins through the tunnel; with the tunnel closed the read fails. No SQL query touches the sensitive table. |
 | 2 | Viewer sees ciphertext; analyst without step-up is denied; after step-up plaintext and aggregates; a replayed query ID is refused. |
 | 2b | The key memo lives for one query (one fetch per parallel process), not across queries, sessions or roles. |
@@ -178,6 +178,27 @@ These results come from the demo account. Results that are observed but not docu
 | 4 | 200 rows encrypted client-side; the app decrypts them locally. |
 | ★ | 21 tests pass; three notebooks run without errors; encrypted sums match plaintext. |
 | + | Segment averages within 5.2 % on average; correlations and the three-way effect kept; no exact copies of real rows. |
+
+## Performance
+
+`python3 bench/run_all.py` runs the same workload (average salary per department, 200 employees) through every
+option that can run unattended, each in its own pixi environment, and writes [bench/RESULTS.md](bench/RESULTS.md).
+Run a subset with `python3 bench/run_all.py opt1 opt2c`. Option 1b runs headless as a Code Bundle
+(`opt1-tunnel/snowflake/21_code_bundle.sql`, then `python3 bench/run_all.py opt1b`).
+
+| Option | p50 in the demo setup |
+| --- | --- |
+| Plaintext baseline | 0.1 s |
+| 1 Tunnel (live join) | 0.3 s |
+| 1b Notebook + DuckDB through the tunnel | 0.04 s inside the notebook |
+| 2 Key broker | 4.1 s (14.6 s before the call-back fix) |
+| 2b EAI key fetch | 2.3 s |
+| 2c Device flow | 2.8 s |
+| 3 Local join (incl. write-back) | 2.3 s |
+| 4 Client decrypt | 0.1 s |
+| ★ Homomorphic sum | 2.9 s (packed: 1.5 s) |
+
+Single demo account and laptop, a few repetitions each: orders of magnitude, not a sizing guide.
 
 ## Teardown
 
@@ -203,6 +224,7 @@ opt3-local-join/      on-prem Jupyter notebook + Snowflake objects
 opt4-client-decrypt/  on-prem Streamlit app: Snowflake → AES decrypt → DuckDB cache (OIDC/RBAC)
 bonus-homomorphic/    Pyfhel/SEAL homomorphic encryption on Snowflake (vendored Pyfhel with patches)
 synthetic/            segment-based synthetic data generator in SQL + insight and privacy scorecard
+bench/                performance benchmarks for every option (run_all.py) and RESULTS.md
 ```
 
 ## Security notes
