@@ -58,6 +58,8 @@ Setup: part of `opt2c-device-flow/setup.sh` (`snowflake/30_remote_decrypt.sql` p
 same data 2.9 s, plaintext 0.1 s); 200 decrypted rows 2.8 s (2c 2.3 s). Checks: all 200 values decrypted and equal
 to 2c, forged API key returns NULL, strict variant raises when denied and works when allowed.
 
+**Key cache in the broker:** the Lambda keeps the unwrapped data key in a module variable for `KEY_CACHE_TTL_S` (default 30 minutes) and then unwraps it from KMS again. KMS is not called per request, and a revoked KMS grant or a disabled key takes effect within that window. Shorter means faster revocation and more KMS calls; each Lambda instance has its own cache.
+
 ## Fail closed
 
 `SOV_DECRYPT_2D` returns NULL when the broker denies or cannot decrypt, which suits interactive queries.

@@ -34,7 +34,8 @@ DENY_TTL_S = int(os.getenv("DENY_TTL_S", "60"))
 
 _sf = None
 _decisions: dict[tuple, tuple[float, dict]] = {}   # (query_id, user, role, cls) -> (ts, decision)
-_keys: dict[str, bytes] = {}                         # classification -> plaintext data key
+_keys: dict[str, tuple[float, bytes]] = {}           # classification -> (fetched_at, plaintext data key)
+KEY_CACHE_TTL_S = int(os.getenv("KEY_CACHE_TTL_S", "1800"))
 
 
 def _sf_client() -> SnowflakeSQL:
@@ -85,13 +86,19 @@ def _check_query_running(query_id: str, user: str, role: str) -> tuple[bool, str
 
 
 def _data_key(cls: str) -> bytes:
-    if cls not in _keys:
-        item = KEYS.get_item(Key={"classification": cls}).get("Item")
-        if not item:
-            raise KeyError(cls)
-        _keys[cls] = kms.decrypt(CiphertextBlob=base64.b64decode(item["wrapped_key"]),
-                                 EncryptionContext={"classification": cls})["Plaintext"]
-    return _keys[cls]
+    """Unwrapped data key, cached in this Lambda instance so KMS is not called per request. The cache entry is
+    renewed after KEY_CACHE_TTL_S (default 30 min): a revoked KMS grant or a disabled key takes effect within that
+    window, and the plaintext key does not live in memory indefinitely."""
+    hit = _keys.get(cls)
+    if hit and time.time() - hit[0] < KEY_CACHE_TTL_S:
+        return hit[1]
+    item = KEYS.get_item(Key={"classification": cls}).get("Item")
+    if not item:
+        raise KeyError(cls)
+    key = kms.decrypt(CiphertextBlob=base64.b64decode(item["wrapped_key"]),
+                      EncryptionContext={"classification": cls})["Plaintext"]
+    _keys[cls] = (time.time(), key)
+    return key
 
 
 def decide(query_id: str, account: str, user: str, role: str, cls: str) -> dict:

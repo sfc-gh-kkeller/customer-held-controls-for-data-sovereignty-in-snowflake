@@ -172,3 +172,4 @@ Also verified:
 * **Stored results and Dynamic Tables:** the masking policies return `**KEY DENIED**` when the broker refuses, and
   `CREATE TABLE AS` would store that placeholder as a value. External functions are not supported in Dynamic
   Tables at all, so pipelines need an External Access UDF variant (2b, 2c or 2d) with a fail-closed (strict) mode.
+* **Key cache in the broker:** the Lambda keeps the unwrapped data key in a module variable for `KEY_CACHE_TTL_S` (default 30 minutes) and then unwraps it from KMS again. KMS is not called per request, and a revoked KMS grant or a disabled key takes effect within that window. Shorter means faster revocation and more KMS calls; each Lambda instance has its own cache.

@@ -49,7 +49,8 @@ MAX_ITEMS = int(os.getenv("MAX_DECRYPT_ITEMS", "5000"))   # one vectorized UDF b
 _sf = None
 _hs256 = None
 _bench_token = None
-_keys: dict[str, bytes] = {}
+_keys: dict[str, tuple[float, bytes]] = {}   # classification -> (fetched_at, plaintext data key)
+KEY_CACHE_TTL_S = int(os.getenv("KEY_CACHE_TTL_S", "1800"))
 
 
 # --------------------------------------------------------------------------- helpers
@@ -83,13 +84,19 @@ def _h(s: str) -> str:
 
 
 def _data_key(cls: str) -> bytes:
-    if cls not in _keys:
-        item = KEYS.get_item(Key={"classification": cls}).get("Item")
-        if not item:
-            raise KeyError(cls)
-        _keys[cls] = kms.decrypt(CiphertextBlob=base64.b64decode(item["wrapped_key"]),
-                                 EncryptionContext={"classification": cls})["Plaintext"]
-    return _keys[cls]
+    """Unwrapped data key, cached in this Lambda instance so KMS is not called per request. The cache entry is
+    renewed after KEY_CACHE_TTL_S (default 30 min): a revoked KMS grant or a disabled key takes effect within that
+    window, and the plaintext key does not live in memory indefinitely."""
+    hit = _keys.get(cls)
+    if hit and time.time() - hit[0] < KEY_CACHE_TTL_S:
+        return hit[1]
+    item = KEYS.get_item(Key={"classification": cls}).get("Item")
+    if not item:
+        raise KeyError(cls)
+    key = kms.decrypt(CiphertextBlob=base64.b64decode(item["wrapped_key"]),
+                      EncryptionContext={"classification": cls})["Plaintext"]
+    _keys[cls] = (time.time(), key)
+    return key
 
 
 def _ctx(body: dict) -> dict:

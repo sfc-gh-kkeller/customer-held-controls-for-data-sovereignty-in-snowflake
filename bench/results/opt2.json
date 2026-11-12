@@ -1,23 +1,23 @@
 {
   "name": "opt2",
-  "ts": "2026-11-10T18:25:18",
+  "ts": "2026-11-12T11:49:12",
   "denied_no_grant": {
-    "first_ms": 5180,
+    "first_ms": 3531,
     "wall": {
       "n": 3,
-      "p50": 3382,
-      "p95": 3995,
-      "min": 3011,
-      "max": 3995,
-      "mean": 3463
+      "p50": 3164,
+      "p95": 3222,
+      "min": 3157,
+      "max": 3222,
+      "mean": 3181
     },
     "server": {
       "n": 3,
-      "p50": 3349,
-      "p95": 3962,
-      "min": 2978,
-      "max": 3962,
-      "mean": 3430
+      "p50": 3118,
+      "p95": 3170,
+      "min": 3102,
+      "max": 3170,
+      "mean": 3130
     },
     "rows": 6,
     "sample": [
@@ -35,39 +35,39 @@
   },
   "stepup_grant_ms": {
     "n": 2,
-    "p50": 603,
-    "p95": 1069,
-    "min": 136,
-    "max": 1069,
-    "mean": 603
+    "p50": 330,
+    "p95": 482,
+    "min": 178,
+    "max": 482,
+    "mean": 330
   },
   "stepup_responses": [
     {
       "ok": "True",
-      "message": "Granted 'salary' to <DEMO_USER> for 15 min (until 17:39:04 UTC)"
+      "message": "Granted 'salary' to <DEMO_USER> for 15 min (until 11:02:47 UTC)"
     },
     {
       "ok": "True",
-      "message": "Granted 'pii' to <DEMO_USER> for 15 min (until 17:39:04 UTC)"
+      "message": "Granted 'pii' to <DEMO_USER> for 15 min (until 11:02:47 UTC)"
     }
   ],
   "aggregate_200": {
-    "first_ms": 5322,
+    "first_ms": 4040,
     "wall": {
       "n": 10,
-      "p50": 4087,
-      "p95": 4485,
-      "min": 3362,
-      "max": 4485,
-      "mean": 3946
+      "p50": 4063,
+      "p95": 6469,
+      "min": 3492,
+      "max": 6469,
+      "mean": 4543
     },
     "server": {
       "n": 10,
-      "p50": 4050,
-      "p95": 4458,
-      "min": 3333,
-      "max": 4458,
-      "mean": 3909
+      "p50": 4004,
+      "p95": 6407,
+      "min": 3436,
+      "max": 6407,
+      "mean": 4487
     },
     "rows": 6,
     "sample": [
@@ -84,22 +84,22 @@
     ]
   },
   "rows_200_x3_cols": {
-    "first_ms": 4009,
+    "first_ms": 7346,
     "wall": {
       "n": 5,
-      "p50": 4480,
-      "p95": 4814,
-      "min": 4375,
-      "max": 4814,
-      "mean": 4513
+      "p50": 4864,
+      "p95": 5786,
+      "min": 4326,
+      "max": 5786,
+      "mean": 4971
     },
     "server": {
       "n": 5,
-      "p50": 4440,
-      "p95": 4773,
-      "min": 4340,
-      "max": 4773,
-      "mean": 4474
+      "p50": 4799,
+      "p95": 5731,
+      "min": 4245,
+      "max": 5731,
+      "mean": 4907
     },
     "rows": 200,
     "sample": [

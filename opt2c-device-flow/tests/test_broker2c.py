@@ -277,3 +277,22 @@ def test_device_flow(idp):
     claims = jwt.decode(r["id_token"], HS, algorithms=["HS256"], audience="sovereignty-key-broker")
     assert claims["sub"] == "ANALYST1" and claims["classes"] == ["salary"]
     assert json.loads(idp.handler(ev("/token", tok), None)["body"])["error"] == "invalid_grant"   # single use
+
+
+# ------------------------------------------------------------------ key cache in the Lambda
+def test_data_key_cached_then_renewed_after_ttl(monkeypatch):
+    b = load("broker2c_cache", ROOT / "lambda/broker2c/handler.py")
+    calls = []
+    b.KEYS = types.SimpleNamespace(get_item=lambda Key: {"Item": {"wrapped_key": "d3JhcHBlZA=="}})
+    b.kms = types.SimpleNamespace(decrypt=lambda **kw: calls.append(1) or {"Plaintext": b"\x02" * 32})
+    now = [1_000_000.0]
+    monkeypatch.setattr(b.time, "time", lambda: now[0])
+    for _ in range(50):                       # many requests, one KMS call
+        assert b._data_key("salary") == b"\x02" * 32
+    assert len(calls) == 1
+    now[0] += b.KEY_CACHE_TTL_S - 1           # still inside the window
+    b._data_key("salary")
+    assert len(calls) == 1
+    now[0] += 2                               # 30 min passed: renewed from KMS
+    b._data_key("salary")
+    assert len(calls) == 2 and b.KEY_CACHE_TTL_S == 1800
