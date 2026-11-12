@@ -84,3 +84,19 @@ Source table names are mapped to the local decrypted cache. Switch to *Live sour
   computed locally, which suits departmental data volumes rather than full-table scans.
 * Dev sign-in is for demos. A shared deployment could use only OIDC (`[app].dev_login = false`) behind a TLS
   reverse proxy.
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Sign-in (dev login shown; OIDC in a shared deployment)](screenshots/opt4-01-signin.png)
+*Sign-in (dev login shown; OIDC in a shared deployment)*
+
+![Connected with the IP-restricted service user; 200 rows decrypted into the local cache](screenshots/opt4-02-connect.png)
+*Connected with the IP-restricted service user; 200 rows decrypted into the local cache*
+
+![Local DuckDB query on decrypted data (rows blurred)](screenshots/opt4-03-query.png)
+*Local DuckDB query on decrypted data (rows blurred)*
+
+![Same query against Snowflake fails: it only holds ciphertext](screenshots/opt4-04-compare.png)
+*Same query against Snowflake fails: it only holds ciphertext*

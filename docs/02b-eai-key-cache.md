@@ -128,3 +128,10 @@ SELECT COUNT(DISTINCT SOVEREIGNTY_DEMO.OPT2B_WARM_CACHE.PROCESS_PROBE_EAI('salar
        COUNT_IF(SOVEREIGNTY_DEMO.OPT2B_WARM_CACHE.PROCESS_PROBE_EAI('salary'):cache_hit::BOOLEAN) AS memo_hits
 FROM TABLE(GENERATOR(ROWCOUNT => 5000));                                       -- few processes, many hits
 ```
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![A new process and an empty memo per query; within one query 8 processes serve 5,000 rows](screenshots/opt2b-01-memo.png)
+*A new process and an empty memo per query; within one query 8 processes serve 5,000 rows*

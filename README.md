@@ -187,6 +187,16 @@ These results come from the demo account. Results that are observed but not docu
 | ★ | 21 tests pass; three notebooks run without errors; encrypted sums match plaintext. |
 | + | Segment averages within 5.2 % on average; correlations and the three-way effect kept; no exact copies of real rows. |
 
+## Screenshots
+
+Every option, captured from the demo account with PII and identifiers blurred: [docs/screenshots](docs/screenshots/README.md).
+
+| Option 2: masked, denied, then decrypted after step-up | Option 4: Snowflake holds only ciphertext |
+| --- | --- |
+| ![Option 2](docs/screenshots/opt2-02-sql.png) | ![Option 4](docs/screenshots/opt4-04-compare.png) |
+| **Option 1: tunnel closed, open, closed** | **Option 3: what Snowflake saw** |
+| ![Option 1](docs/screenshots/opt1-01-tunnel.png) | ![Option 3](docs/screenshots/opt3-02-snowflake-saw.png) |
+
 ## Performance
 
 `python3 bench/run_all.py` runs the same workload (average salary per department, 200 employees) through every

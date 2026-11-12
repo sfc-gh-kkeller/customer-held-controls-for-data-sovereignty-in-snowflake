@@ -89,3 +89,10 @@ broader coverage of relationships is needed. The scorecard in `03_scorecard.sql`
 ```sql
 DROP SCHEMA SOVEREIGNTY_DEMO.SYNTH;
 ```
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Scorecard: insights real vs synthetic, segment error, exact copies, distance to closest record](../docs/screenshots/synthetic-01-scorecard.png)
+*Scorecard: insights real vs synthetic, segment error, exact copies, distance to closest record*

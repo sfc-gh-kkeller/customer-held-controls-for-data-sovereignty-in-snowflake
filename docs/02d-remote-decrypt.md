@@ -85,3 +85,10 @@ Dynamic Table never revisits committed rows. That failure was observed in pii-ke
   A key id in each envelope (as in pii-key-stays-in-aws) would let old and new keys coexist; the broker would then
   reload its key ring when it sees an unknown id.
 * Same binding caveats as 2c (observed, not documented: the self query id; owner's-rights procedures are denied).
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Same aggregate via SOV_DECRYPT_2D (decrypted in AWS); the strict variant raises when 'pii' is not approved](screenshots/opt2d-01-remote.png)
+*Same aggregate via SOV_DECRYPT_2D (decrypted in AWS); the strict variant raises when 'pii' is not approved*

@@ -124,3 +124,13 @@ authentication from a notebook on SPCS.
 * Restrict usage of `QUERY_ONPREM` to a dedicated analyst role and add a row access policy on the view.
 * The scalar service function is `MAX_BATCH_ROWS = 1` and returns one VARIANT per call. Large extracts belong in
   the notebook pattern.
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Option 1: tunnel closed (0 rows), opened by the owner, live join, closed again (0 rows, no SQL error)](screenshots/opt1-01-tunnel.png)
+*Option 1: tunnel closed (0 rows), opened by the owner, live join, closed again (0 rows, no SQL error)*
+
+![Option 1b: Code Bundle run in SPCS; the notebook writes only timings back](screenshots/opt1b-01-bundle.png)
+*Option 1b: Code Bundle run in SPCS; the notebook writes only timings back*

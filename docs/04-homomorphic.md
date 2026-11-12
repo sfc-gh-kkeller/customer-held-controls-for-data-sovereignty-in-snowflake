@@ -63,3 +63,13 @@ pixi install && pixi run test        # builds vendored Pyfhel 3.4.2 + SEAL 4.1.2
 pixi run deploy && pixi run load     # SOVEREIGNTY_DEMO.HE (config.toml)
 pixi run demo                        # executes the 3 notebooks; every result checked against plaintext
 ```
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![What Snowflake holds: ciphertext blobs and public HE parameters only](screenshots/he-01-ciphertext.png)
+*What Snowflake holds: ciphertext blobs and public HE parameters only*
+
+![GROUP BY / ROLLUP computed on ciphertext, decrypted locally and checked against plaintext](screenshots/he-02-groupby.png)
+*GROUP BY / ROLLUP computed on ciphertext, decrypted locally and checked against plaintext*

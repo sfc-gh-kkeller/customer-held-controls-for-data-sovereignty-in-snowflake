@@ -127,3 +127,16 @@ that an incremental Dynamic Table never revisits. Use [Option 2d](02d-remote-dec
 which raises instead, or check for unexpected NULLs before storing.
 
 **Key cache in the broker:** the Lambda keeps the unwrapped data key in a module variable for `KEY_CACHE_TTL_S` (default 30 minutes) and then unwraps it from KMS again. KMS is not called per request, and a revoked KMS grant or a disabled key takes effect within that window. Shorter means faster revocation and more KMS calls; each Lambda instance has its own cache.
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![QR code and user code shown to the Snowflake user](screenshots/opt2c-01-qr.png)
+*QR code and user code shown to the Snowflake user*
+
+![Approval on the phone: classifications, justification, key lifetime, TOTP](screenshots/opt2c-02-approve.png)
+*Approval on the phone: classifications, justification, key lifetime, TOTP*
+
+![Ciphertext, NULL without a key, decrypt with the session key, 'pii' not approved, single-use device code](screenshots/opt2c-03-sql.png)
+*Ciphertext, NULL without a key, decrypt with the session key, 'pii' not approved, single-use device code*

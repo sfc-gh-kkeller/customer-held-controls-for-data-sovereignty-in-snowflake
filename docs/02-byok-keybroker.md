@@ -173,3 +173,13 @@ Also verified:
   `CREATE TABLE AS` would store that placeholder as a value. External functions are not supported in Dynamic
   Tables at all, so pipelines need an External Access UDF variant (2b, 2c or 2d) with a fail-closed (strict) mode.
 * **Key cache in the broker:** the Lambda keeps the unwrapped data key in a module variable for `KEY_CACHE_TTL_S` (default 30 minutes) and then unwraps it from KMS again. KMS is not called per request, and a revoked KMS grant or a disabled key takes effect within that window. Shorter means faster revocation and more KMS calls; each Lambda instance has its own cache.
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Step-up portal: user, classification, justification, duration and TOTP](screenshots/opt2-01-stepup.png)
+*Step-up portal: user, classification, justification, duration and TOTP*
+
+![Masked for ACCOUNTADMIN, denied without step-up, decrypted after step-up for 'salary' only](screenshots/opt2-02-sql.png)
+*Masked for ACCOUNTADMIN, denied without step-up, decrypted after step-up for 'salary' only*

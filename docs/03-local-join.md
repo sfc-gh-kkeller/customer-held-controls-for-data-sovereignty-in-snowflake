@@ -51,3 +51,13 @@ It uses the same on-prem lake as Option 1 (`cd ../opt1-tunnel && pixi run start 
 * The Snowflake UX (Snowsight notebooks, Cortex, BI connectors) doesn't see the combined data.
 * Aggregates pushed back may still allow inference. k-anonymity is a simple guard; differential privacy or
   Snowflake aggregation policies on the target table could be layered on top.
+
+## Screenshots
+
+Captured from the demo account. Names, IBANs, individual salaries, account identifiers, endpoint URLs, QR codes and keys are blurred or replaced.
+
+![Local join of the Snowflake half with the on-prem Iceberg half (rows blurred)](screenshots/opt3-01-local-join.png)
+*Local join of the Snowflake half with the on-prem Iceberg half (rows blurred)*
+
+![Snowflake's own query history for the session: no sensitive data](screenshots/opt3-02-snowflake-saw.png)
+*Snowflake's own query history for the session: no sensitive data*
