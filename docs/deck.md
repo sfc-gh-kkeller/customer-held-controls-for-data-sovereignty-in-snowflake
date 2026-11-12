@@ -74,6 +74,7 @@ few datasets where the customer wants the switch in their own hands.
 | **2 Key broker** | Snowflake, AES-256-GCM ciphertext | data owner: KMS + broker in own AWS | only during a RUNNING query of a stepped-up user | yes, via masking policy |
 | **2b EAI key fetch** | Snowflake, AES-256-GCM ciphertext | data owner: vault authorizes the integration | only during a query (key memo per query) | yes, via masking policy / view |
 | **2c Device-flow key** | Snowflake, AES-256-GCM ciphertext | data owner: IdP approval + broker checks the running query | only during a running query, in the approved session | yes, via SQL function |
+| **2d Remote decrypt** | Snowflake, AES-256-GCM ciphertext; key only in AWS | data owner: as 2c, broker decrypts in AWS | plaintext (never the key) during a running query, in the approved session | yes, via SQL function |
 | **3 Local join** | on-prem only | data owner – data never leaves | never | no (local notebook) |
 | **4 Client decrypt** | Snowflake, AES-256 ciphertext | data owner: key only in on-prem app | never | no (on-prem app) |
 | **HE bonus** | Snowflake, homomorphic ciphertext | data owner: secret key stays local | never | partly (encrypted aggregates) |

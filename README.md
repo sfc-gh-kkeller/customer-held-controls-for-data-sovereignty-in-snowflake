@@ -40,7 +40,7 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 | **+ Synthetic** | Keeps the insights you model.<br>No real row is copied.<br>Plain SQL in Snowflake. | Keeps only what you model.<br>Rare groups lose detail.<br>Not an audited differential-privacy guarantee. | Test data, sharing with partners, data products with a published scorecard |
 
 None of the options stops an authorised user from copying what they are allowed to see. The options can be
-combined: native Snowflake controls for the bulk, Option 2 or 2c for identifying columns, homomorphic encryption for
+combined: native Snowflake controls for the bulk, Option 2, 2c or 2d for identifying columns, homomorphic encryption for
 salaries, and Option 1 or 3 for the few datasets that may not be stored in the cloud.
 
 **Key custody is not data custody.** "The key stays with us" (Options 2–2d) is a different requirement from "the data
@@ -68,7 +68,7 @@ plaintext in Snowflake from the first table on. Check which of the two a require
    - **Option 3** (`cd opt3-local-join && pixi run setup-snowflake && pixi run lab`): shows a local join and
      that Snowflake's history holds no sensitive data. About 5 minutes.
    - **Synthetic data** (the three scripts in `synthetic/`): shows which insights survive. About 2 minutes.
-5. **Move on to the key-control options:** Option 2 needs an AWS account; Option 2c builds on it. Option 1 needs
+5. **Move on to the key-control options:** Option 2 needs an AWS account; Options 2c and 2d build on it. Option 1 needs
    Docker and Snowpark Container Services. Follow the table under *Set up and run*.
 6. **Run the full walkthrough** in Snowsight with [snowsight_demo.sql](snowsight_demo.sql) once the options you
    want are set up. The block at the top lists what to start on the laptop first.
@@ -81,7 +81,7 @@ Each option's folder has its own README with details and troubleshooting.
 
 - A Snowflake account (Enterprise or higher; Option 1 and 1b need Snowpark Container Services) and a role that can
   create databases, roles, users, integrations, network policies and compute pools (`ACCOUNTADMIN` in the demo).
-- For Options 2, 2b and 2c: an AWS account where you can deploy a CloudFormation stack (KMS, Lambda, API Gateway,
+- For Options 2, 2b, 2c and 2d: an AWS account where you can deploy a CloudFormation stack (KMS, Lambda, API Gateway,
   DynamoDB, Secrets Manager). The stack deploys to `eu-central-1`.
 
 **Tools and which options need them**
@@ -91,10 +91,10 @@ Each option's folder has its own README with details and troubleshooting.
 | [Snowflake CLI](https://docs.snowflake.com/developer-guide/snowflake-cli/index) (`snow`) 3.x | all | runs the SQL and setup scripts |
 | [pixi](https://pixi.sh) | all | creates each option's Python environment and runs its tasks |
 | Git, Bash, OpenSSL | all | clone; setup scripts; key pairs |
-| [uv](https://docs.astral.sh/uv/) | 2, 2c | Python environment for the CDK app |
-| Node.js 22 or 24 LTS | 2, 2c | `npx aws-cdk`; Marp for rebuilding the deck |
-| [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) v2 | 2, 2b, 2c | log in and deploy the stack |
-| Docker (running) | 1, 2, 2c | Option 1 images and on-prem lake; CDK Lambda bundling |
+| [uv](https://docs.astral.sh/uv/) | 2, 2c, 2d | Python environment for the CDK app |
+| Node.js 22 or 24 LTS | 2, 2c, 2d | `npx aws-cdk`; Marp for rebuilding the deck |
+| [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) v2 | 2, 2b, 2c, 2d | log in and deploy the stack |
+| Docker (running) | 1, 2, 2c, 2d | Option 1 images and on-prem lake; CDK Lambda bundling |
 
 Each option has its own `pixi.toml`, so there is nothing to install per option: the first `pixi run …` in a folder
 builds that folder's environment.
@@ -133,7 +133,7 @@ Configuration is read from the environment; nothing account-specific is stored i
 
 ```bash
 export SNOW_CONNECTION=<your snow connection name>   # default: "default"
-export DEMO_USER=<your Snowflake user>               # user enrolled for TOTP step-up (Options 2 / 2c)
+export DEMO_USER=<your Snowflake user>               # user enrolled for TOTP step-up (Options 2 / 2c / 2d)
 ```
 
 **Known issues**
@@ -181,6 +181,7 @@ These results come from the demo account. Results that are observed but not docu
 | 2 | Viewer sees ciphertext; analyst without step-up is denied; after step-up plaintext and aggregates; a replayed query ID is refused. |
 | 2b | The key memo lives for one query (one fetch per parallel process), not across queries, sessions or roles. |
 | 2c | 45/45 correct bindings to the running query; one call-back per query; about 0.3 s extra. |
+| 2d | All 200 values decrypted in AWS and equal to 2c; forged API key returns NULL; the strict variant raises when denied. The key never enters Snowflake. |
 | 3 | Local join of 200 rows; only k-anonymous aggregates are written back; Snowflake history shows no sensitive data. |
 | 4 | 200 rows encrypted client-side; the app decrypts them locally. |
 | ★ | 21 tests pass; three notebooks run without errors; encrypted sums match plaintext. |
@@ -227,7 +228,7 @@ shared/sample_data/   deterministic synthetic HR dataset used by the options
 opt1-tunnel/          SPCS tunnel (sidecar + iceberg-agent), on-prem agent + tunnel_ctl, Lakekeeper + RustFS, notebooks
 opt2-keybroker/       client (encrypt/load, enroll, demo, portal QR), Lambdas (broker, step-up), CDK stack, SQL, tests
 opt2b-warm-cache/     probe UDFs that measure how long a Python UDF key memo lives
-opt2c-device-flow/    mock IdP (device flow), 2c broker, EAI UDFs, query-binding benchmark, end-to-end test
+opt2c-device-flow/    mock IdP (device flow), 2c/2d broker (key release + remote decrypt), EAI UDFs, query-binding benchmark, end-to-end test
 opt3-local-join/      on-prem Jupyter notebook + Snowflake objects
 opt4-client-decrypt/  on-prem Streamlit app: Snowflake → AES decrypt → DuckDB cache (OIDC/RBAC)
 bonus-homomorphic/    Pyfhel/SEAL homomorphic encryption on Snowflake (vendored Pyfhel with patches)
@@ -242,6 +243,8 @@ bench/                performance benchmarks for every option (run_all.py) and R
   - the mock IdP stands in for a real identity provider;
   - Option 4 offers a development sign-in;
   - the on-prem lake uses default credentials.
+- **Key cache in the brokers.** The Lambdas keep the KMS-unwrapped data key in memory and renew it every 30 minutes
+  (`KEY_CACHE_TTL_S`), so KMS is not called per request; a revoked KMS grant takes effect within that window.
 - **Before using any of this beyond a demo,** replace each shortcut with your enterprise IdP, MFA and a managed vault.
 - **Report security issues** privately to the author rather than in a public issue.
 

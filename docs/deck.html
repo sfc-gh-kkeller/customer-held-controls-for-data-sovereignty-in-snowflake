@@ -233,6 +233,13 @@ footer { font-size: 12px; color: #5B5B5B; }
 <td>yes, via SQL function</td>
 </tr>
 <tr>
+<td><strong>2d Remote decrypt</strong></td>
+<td>Snowflake, AES-256-GCM ciphertext; key only in AWS</td>
+<td>data owner: as 2c, broker decrypts in AWS</td>
+<td>plaintext (never the key) during a running query, in the approved session</td>
+<td>yes, via SQL function</td>
+</tr>
+<tr>
 <td><strong>3 Local join</strong></td>
 <td>on-prem only</td>
 <td>data owner – data never leaves</td>

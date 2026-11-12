@@ -167,6 +167,15 @@ SELECT SOV_DEVICE_REDEEM($device_code);
 -- 2c-8. Copy the key into ANOTHER worksheet (= other session) and run 2c-5 there: all NULL.
 SELECT $api_key;
 
+-- 2d. Remote decrypt with the SAME API key: the broker decrypts in AWS, the key never enters Snowflake.
+--     Same query binding; the query text must call SOV_DECRYPT_2D.
+SELECT department, COUNT(*) AS people,
+       ROUND(AVG(TRY_TO_NUMBER(SOV_DECRYPT_2D(salary, 'salary', $api_key)))) AS avg_salary
+FROM EMPLOYEES_ENC GROUP BY department ORDER BY department;
+
+-- 2d-strict. For CREATE TABLE AS / Dynamic Tables: raise instead of returning NULL ('pii' not approved -> error).
+SELECT COUNT(SOV_DECRYPT_2D_STRICT(full_name, 'pii', $api_key)) FROM EMPLOYEES_ENC;
+
 
 /* =====================================================================================================
    OPTION 3 – Split storage: only non-sensitive data in Snowflake, the join happens on-prem
