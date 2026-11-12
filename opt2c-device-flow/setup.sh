@@ -40,4 +40,6 @@ umask 077; echo "$BENCH" > .secrets/bench_token.txt
 echo "== 4. Snowflake objects (EAI, UDFs, wrappers, data copy)"
 snow sql -c "$CONN" -f snowflake/10_objects.sql -D "idp_host=$IDP_HOST" -D "broker_host=$BROKER_HOST" \
   -D "bench_token=$BENCH" >/dev/null
+echo "== 5. Option 2d: remote decrypt (key stays in AWS)"
+snow sql -c "$CONN" -f snowflake/30_remote_decrypt.sql -D "broker_host=$BROKER_HOST" >/dev/null
 echo "Done. IdP: https://$IDP_HOST/device   Broker: https://$BROKER_HOST"

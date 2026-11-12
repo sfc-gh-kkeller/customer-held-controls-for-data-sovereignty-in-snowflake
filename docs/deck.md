@@ -518,6 +518,35 @@ Teams that want **per-person, per-session approval** without API Gateway – and
 
 ---
 
+## Option 2d – Remote decrypt: the key never enters Snowflake
+
+Same phone approval, API key and query binding as 2c – but the broker **never hands out the key**.
+A vectorized UDF sends batches of ciphertext (up to 2,000 values); the broker decrypts in AWS and returns plaintext.
+Also the shape for external **de-tokenization**.
+
+<div class="cols">
+<div class="pro">
+
+### Pros
+- No data key in Snowflake, not even in query memory
+- Broker logs every batch: user, query id, classification, rows, failures
+- Strict variant raises instead of returning NULL – safe for CTAS and Dynamic Tables
+
+</div>
+<div class="con">
+
+### Cons
+- Plaintext crosses the network on the way back (TLS; PrivateLink possible)
+- Cost grows with rows – one call per batch
+- Same observed-behaviour caveat as 2c
+
+</div>
+</div>
+
+<p class="small">Key custody ≠ data custody: decrypting upstream before loading also keeps the key out of Snowflake, but puts plaintext in Snowflake from the first table on.</p>
+
+---
+
 <!-- _class: divider -->
 
 # Option 3

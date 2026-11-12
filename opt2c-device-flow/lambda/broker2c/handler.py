@@ -3,6 +3,9 @@
 Routes (JSON in / JSON out):
   POST /apikey  {id_token, ctx}            -> {api_key, expires_at, bound_query_id}
   POST /key     {api_key, classification, ctx} -> {key_b64 | null, reason, bound_query_id}
+  POST /decrypt {api_key, classification, ctx, items[]} -> {plain[] | null, reason, failed}
+                Option 2d: same checks and binding as /key, but the broker decrypts the batch itself and
+                the data key never leaves AWS (Snowflake sends ciphertext, gets plaintext back).
   POST /bind    {ctx, marker} + X-Bench-Token -> bake-off probe: binding only, no secrets
 
 ctx = {account, user, role, session, query_id, mode}
@@ -26,6 +29,7 @@ import time
 import boto3
 import jwt
 from botocore.exceptions import ClientError
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from sfsql import SnowflakeSQL
 
@@ -40,6 +44,7 @@ AUDIENCE = "sovereignty-key-broker"
 DECISION_TTL_S = int(os.getenv("DECISION_TTL_S", "300"))   # mode A: one decision per query_id
 SESSION_TTL_S = int(os.getenv("SESSION_TTL_S", "3"))       # mode B: keyed by session, must be short
 WAIT_S = 6.0
+MAX_ITEMS = int(os.getenv("MAX_DECRYPT_ITEMS", "5000"))   # one vectorized UDF batch
 
 _sf = None
 _hs256 = None
@@ -223,6 +228,19 @@ def route_apikey(body: dict) -> dict:
 
 
 def route_key(body: dict) -> dict:
+    ctx, cls, ak, b, deny = _authorize(body, "key", "SOV_GET_KEY_2C|SOV_DECRYPT_2C")
+    if deny:
+        return _resp(403, {"key_b64": None, "reason": deny})
+    if b["callback"]:   # one audit line per query, not per process
+        _audit(event="key", result="release", ctx=ctx, classification=cls, bound_query_id=b["query_id"],
+               justification=ak["justification"], callback_ms=b.get("callback_ms"))
+    return _resp(200, {"key_b64": base64.b64encode(_data_key(cls)).decode(), "reason": "released",
+                       "bound_query_id": b["query_id"], "callback": b["callback"]})
+
+
+def _authorize(body: dict, event: str, marker: str):
+    """Shared checks for /key and /decrypt: API key scope first (no call-back), then the query binding.
+    Returns (ctx, classification, api_key_item, binding, deny_reason)."""
     ctx = _ctx(body)
     cls = str(body.get("classification", "")).lower()
     ak_hash = _h(str(body.get("api_key", "")))
@@ -237,19 +255,46 @@ def route_key(body: dict) -> dict:
     elif cls not in ak["classes"]:
         reason = "classification_not_in_api_key"
     if reason:   # cheap checks first: no call-back
-        _audit(event="key", result="deny", reason=reason, ctx=ctx, classification=cls)
-        return _resp(403, {"key_b64": None, "reason": reason})
-
-    b = bind(ctx, "SOV_GET_KEY_2C|SOV_DECRYPT_2C", scope=ak_hash[:16])
+        _audit(event=event, result="deny", reason=reason, ctx=ctx, classification=cls)
+        return ctx, cls, ak, None, reason
+    b = bind(ctx, marker, scope=f"{event}#{ak_hash[:16]}")
     if not b["ok"]:
         if b["callback"]:
-            _audit(event="key", result="deny", reason=b["reason"], ctx=ctx, classification=cls)
-        return _resp(403, {"key_b64": None, "reason": b["reason"]})
-    if b["callback"]:   # one audit line per query, not per process
-        _audit(event="key", result="release", ctx=ctx, classification=cls, bound_query_id=b["query_id"],
-               justification=ak["justification"], callback_ms=b.get("callback_ms"))
-    return _resp(200, {"key_b64": base64.b64encode(_data_key(cls)).decode(), "reason": "released",
-                       "bound_query_id": b["query_id"], "callback": b["callback"]})
+            _audit(event=event, result="deny", reason=b["reason"], ctx=ctx, classification=cls)
+        return ctx, cls, ak, b, b["reason"]
+    return ctx, cls, ak, b, None
+
+
+def _open(aes: AESGCM, env: str, aad: bytes) -> str:
+    raw = base64.b64decode(env)            # iv[12] || ciphertext || tag[16], as in Option 2
+    return aes.decrypt(raw[:12], raw[12:], aad).decode()
+
+
+def route_decrypt(body: dict) -> dict:
+    """Option 2d: decrypt a batch in AWS. Same authorisation as /key; the key is never returned."""
+    items = body.get("items")
+    if not isinstance(items, list) or len(items) > MAX_ITEMS:
+        return _resp(413 if isinstance(items, list) else 400, {"plain": None, "reason": "bad_items"})
+    ctx, cls, ak, b, deny = _authorize(body, "decrypt", "SOV_DECRYPT_2D")
+    if deny:
+        return _resp(403, {"plain": None, "reason": deny})
+    aes, aad = AESGCM(_data_key(cls)), cls.encode()
+    plain, failed = [], 0
+    for env in items:
+        if env is None:
+            plain.append(None)
+            continue
+        try:
+            plain.append(_open(aes, env, aad))
+        except Exception:
+            plain.append(None)
+            failed += 1
+    # One line per batch (a query sends one batch per UDF process): who, which query, how many values.
+    # Never the values themselves.
+    _audit(event="decrypt", result="ok", ctx=ctx, classification=cls, bound_query_id=b["query_id"],
+           rows=len(items), failed=failed, justification=ak["justification"], callback=b["callback"])
+    return _resp(200, {"plain": plain, "reason": "decrypted", "failed": failed,
+                       "bound_query_id": b["query_id"]})
 
 
 def route_bind(body: dict, headers: dict) -> dict:
@@ -280,6 +325,8 @@ def handler(event, context):
             return route_apikey(body)
         if path == "/key":
             return route_key(body)
+        if path == "/decrypt":
+            return route_decrypt(body)
         if path == "/bind":
             return route_bind(body, headers)
     except Exception as e:  # fail closed

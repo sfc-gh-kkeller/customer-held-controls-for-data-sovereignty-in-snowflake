@@ -169,3 +169,6 @@ Also verified:
   `USE_CACHED_RESULT = FALSE` on the analyst user as defense in depth.
   `RESULT_SCAN(<query_id>)` by the *same* user within 24 h could still show a past result. A role without access
   to its own query results is not a concept in Snowflake, so this is worth stating explicitly.
+* **Stored results and Dynamic Tables:** the masking policies return `**KEY DENIED**` when the broker refuses, and
+  `CREATE TABLE AS` would store that placeholder as a value. External functions are not supported in Dynamic
+  Tables at all, so pipelines need an External Access UDF variant (2b, 2c or 2d) with a fail-closed (strict) mode.

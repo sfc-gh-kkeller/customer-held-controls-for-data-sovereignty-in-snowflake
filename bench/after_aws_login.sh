@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Finish the benchmark after `aws login`: redeploy the AWS stack with the broker call-back fix (code change only;
-# keys, grants table, enrolment and Snowflake objects are kept), rerun Option 2, rebuild bench/RESULTS.md.
-#   aws login && SNOW_CONNECTION=<conn> DEMO_USER=<user> bash bench/after_aws_login.sh
+# After `aws login`: redeploy the AWS stack (broker code changes only; keys, grants table, enrolment and
+# Snowflake objects are kept), rerun the given benchmarks (default: opt2), rebuild bench/RESULTS.md.
+#   aws login && SNOW_CONNECTION=<conn> DEMO_USER=<user> bash bench/after_aws_login.sh [opt2 opt2c opt2d]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 CONN="${SNOW_CONNECTION:-default}"
@@ -18,5 +18,5 @@ prop() { echo "$DESC" | python3 -c "import json,sys;d=json.load(sys.stdin)[-1];p
    -c sf_account_locator="$SF_LOCATOR" -c sf_iam_user_arn="$(prop API_AWS_IAM_USER_ARN)" \
    -c sf_external_id="$(prop API_AWS_EXTERNAL_ID)" >/dev/null)
 
-echo "== 2. Rerun the Option 2 benchmark and rebuild the report"
-python3 bench/run_all.py opt2
+echo "== 2. Rerun benchmarks (${*:-opt2}) and rebuild the report"
+python3 bench/run_all.py ${@:-opt2}

@@ -16,8 +16,10 @@ Baseline: the same aggregate on plaintext in Snowflake takes **95 ms**.
 | 2 Key broker | same query without a grant (denied) | **3.4 s** | 4.0 s | 5.2 s | Snowflake + AWS broker |  |
 | 2b Key fetch (EAI) | 200 rows, one key fetch per query | **2.3 s** | 2.5 s | 7.3 s | Snowflake UDF | probe UDF; the HTTPS fetch stands in for the vault call |
 | 2b (no EAI) | same probe without external access | **1.6 s** | 1.8 s | 2.6 s | Snowflake UDF | Python UDF start-up alone |
-| 2c Device flow | aggregate, decrypt 200 salaries | **2.8 s** | 3.1 s | 3.2 s | Snowflake UDF + broker |  |
-| 2c Device flow | 200 decrypted rows | **2.3 s** | 2.4 s | 2.1 s | Snowflake UDF + broker |  |
+| 2c Device flow | aggregate, decrypt 200 salaries | **2.9 s** | 3.4 s | 3.0 s | Snowflake UDF + broker |  |
+| 2c Device flow | 200 decrypted rows | **2.3 s** | 3.2 s | 2.4 s | Snowflake UDF + broker |  |
+| 2d Remote decrypt | aggregate, decrypt 200 salaries in AWS | **4.0 s** | 4.5 s | 4.9 s | Snowflake UDF + broker | key never enters Snowflake; ciphertext out, plaintext back |
+| 2d Remote decrypt | 200 decrypted rows | **2.8 s** | 2.9 s | 3.0 s | Snowflake UDF + broker | checks: all_200_decrypted ok, forged_key_returns_null ok, strict_denied_raises ok, strict_allowed_works ok, same_values_as_2c_first_20 ok |
 | 3 Local join | pull public → join on-prem → write back aggregates | **2.3 s** | 3.5 s | 3.5 s | on-prem + Snowflake | pull 83 ms, join 49 ms, write-back 2.2 s |
 | 4 Client decrypt | fetch ciphertext → decrypt → DuckDB aggregate | **109 ms** | 333 ms | 455 ms | on-prem app | fetch 100 ms, decrypt 1,000 cells 4 ms, aggregate 7 ms |
 | ★ Homomorphic | encrypted SUM per department (100 rows) | **2.9 s** | 3.1 s | 5.5 s | Snowflake UDF | local decrypt 3 ms |
@@ -30,7 +32,7 @@ Baseline: the same aggregate on plaintext in Snowflake takes **95 ms**.
 | --- | --- |
 | Option 1: tunnel up → first answer (SPCS service already running) | 14.2 s |
 | Option 2: TOTP step-up grant (portal call) | 603 ms |
-| Option 2c: device start / approve (scripted) / redeem | 2.7 s / 271 ms / 4.4 s |
+| Option 2c: device start / approve (scripted) / redeem | 2.1 s / 319 ms / 2.8 s |
 | Option 4: connect (ADBC, PAT) | 1.2 s |
 
 ## Findings

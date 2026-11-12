@@ -190,6 +190,63 @@ def test_bind_requires_bench_token(broker):
     assert r["statusCode"] == 403
 
 
+# ------------------------------------------------------------------ Option 2d: /decrypt (key stays in AWS)
+def envelope(value, cls="salary", key=b"\x01" * 32):
+    import base64
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    iv = os.urandom(12)
+    return base64.b64encode(iv + AESGCM(key).encrypt(iv, value.encode(), cls.encode())).decode()
+
+
+def decrypt_call(broker, api_key, items, cls="salary", **c):
+    return call(broker, "/decrypt", {"api_key": api_key, "classification": cls, "ctx": ctx(**c), "items": items})
+
+
+def test_decrypt_batch_key_never_returned(broker):
+    _, out = issue(broker)
+    broker.running["text"] = "SELECT SOV_DECRYPT_2D(salary, 'salary', $api_key) FROM EMPLOYEES_ENC"
+    st, d = decrypt_call(broker, out["api_key"], [envelope("65149"), None, envelope("95520")])
+    assert st == 200 and d["plain"] == ["65149", None, "95520"] and d["failed"] == 0
+    assert "key_b64" not in d and "AQEB" not in json.dumps(d)          # no key material in the response
+
+
+def test_decrypt_requires_query_calling_2d(broker):
+    _, out = issue(broker)        # running text calls SOV_DECRYPT_2C, not 2D
+    st, d = decrypt_call(broker, out["api_key"], [envelope("1")])
+    assert st == 403 and d["plain"] is None and d["reason"] == "query_text_mismatch"
+
+
+def test_decrypt_scope_and_classification(broker):
+    _, out = issue(broker)
+    broker.running["text"] = "SELECT SOV_DECRYPT_2D(...)"
+    assert decrypt_call(broker, out["api_key"], [envelope("1")], session="99")[1]["reason"] == "api_key_scope_mismatch"
+    assert decrypt_call(broker, out["api_key"], [envelope("x", "pii")], cls="pii")[1]["reason"] == \
+        "classification_not_in_api_key"
+    assert decrypt_call(broker, "nk2c_forged", [envelope("1")])[1]["reason"] == "unknown_api_key"
+
+
+def test_decrypt_tampered_or_wrong_aad_is_null(broker):
+    _, out = issue(broker)
+    broker.running["text"] = "SELECT SOV_DECRYPT_2D(...)"
+    st, d = decrypt_call(broker, out["api_key"], [envelope("1", cls="pii"), "not-base64!", envelope("2")])
+    assert st == 200 and d["plain"] == [None, None, "2"] and d["failed"] == 2
+
+
+def test_decrypt_batch_limit(broker):
+    _, out = issue(broker)
+    st, d = decrypt_call(broker, out["api_key"], ["x"] * (broker.MAX_ITEMS + 1))
+    assert st == 413 and d["plain"] is None
+
+
+def test_decrypt_one_callback_per_query(broker):
+    _, out = issue(broker)
+    broker.running["text"] = "SELECT SOV_DECRYPT_2D(...)"
+    n = len(broker.calls)
+    for _ in range(6):            # 6 UDF batches of one query
+        assert decrypt_call(broker, out["api_key"], [envelope("7")])[0] == 200
+    assert len(broker.calls) == n + 1
+
+
 # ------------------------------------------------------------------ mock IdP
 @pytest.fixture
 def idp(monkeypatch):

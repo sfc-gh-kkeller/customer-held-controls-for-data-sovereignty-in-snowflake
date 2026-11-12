@@ -19,6 +19,7 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 | 2 | **External key broker + step-up** | The data sits in Snowflake encrypted, and you hold the key. A user confirms with a phone code and a reason, your broker checks that this exact query is running, and only then releases the key. | [02-byok-keybroker](docs/02-byok-keybroker.md) | [opt2-keybroker/](opt2-keybroker) |
 | 2b | **Direct key fetch (EAI)** | Same encrypted data, much simpler: a Python UDF fetches the key from your vault and forgets it when the query ends. Your vault sees the integration, not the person. | [02b-eai-key-cache](docs/02b-eai-key-cache.md) | [opt2b-warm-cache/](opt2b-warm-cache) |
 | 2c | **Approve on your phone** | Between 2 and 2b: scan a QR code, enter a phone code and a reason, and get a key that works only in your current session and only for the running query. | [02c-device-flow-apikey](docs/02c-device-flow-apikey.md) | [opt2c-device-flow/](opt2c-device-flow) |
+| 2d | **Key never enters Snowflake** | Same phone approval as 2c, but your broker never hands out the key: Snowflake sends the encrypted values, your broker decrypts them in AWS and sends back only what this approved query may see. Works the same way for external de-tokenization. | [02d-remote-decrypt](docs/02d-remote-decrypt.md) | [opt2c-device-flow/](opt2c-device-flow) |
 | 3 | **Keep it separate** | The sensitive data never goes to Snowflake. You pull the non-sensitive part out, join locally, and only safe totals go back. | [03-local-join](docs/03-local-join.md) | [opt3-local-join/](opt3-local-join) |
 | 4 | **Unlock only in your own app** | The data sits in Snowflake encrypted, but the key lives only in an app you run on your premises. Snowflake never sees the key or a readable value. | [05-client-decrypt](docs/05-client-decrypt.md) | [opt4-client-decrypt/](opt4-client-decrypt) |
 | ★ | **Compute without unlocking** | For numbers such as salaries, Snowflake computes totals and averages on encrypted values. Only you can read the result. | [04-homomorphic](docs/04-homomorphic.md) | [bonus-homomorphic/](bonus-homomorphic) |
@@ -32,6 +33,7 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 | **2 Key broker** | Full Snowflake UX through masking policies.<br>Per-person, per-query, time-boxed release with a justification.<br>Replays are refused. | Plaintext is in query memory during approved queries.<br>About 4 s per decrypting query (200 rows; plaintext 0.1 s).<br>Needs an AWS stack (KMS, Lambda, API Gateway, DynamoDB). | Highly sensitive columns that must stay in the platform under external key control |
 | **2b Direct key fetch** | Minimal infrastructure.<br>The key is gone when the query ends. | The vault cannot tell who is asking or why.<br>No step-up unless you add it. | "The key stays with us" with little effort |
 | **2c Phone approval** | Per-person, per-session approval.<br>Bound to the running query.<br>About 0.3 s extra per query. | Plaintext is in query memory during approved queries.<br>Relies on behaviour that is observed but not documented (the query reading its own query ID).<br>Needs an IdP and a broker. | Option 2 controls with a lighter stack |
+| **2d Remote decrypt** | The key never enters Snowflake.<br>Same per-person, per-query approval as 2c.<br>The broker sees every batch it decrypts. | Plaintext crosses the network on the way back.<br>Cost grows with rows (one call per batch of up to 2,000).<br>Same observed-behaviour caveat as 2c. | "The key must never be in the platform", with Snowflake UX kept |
 | **3 Separate** | The sensitive data never reaches Snowflake. | No Snowflake UX on the sensitive part.<br>Compute is limited by the local host. | Data that must never leave the premises |
 | **4 Own app** | Snowflake only ever holds ciphertext.<br>The key stays on premises. | Users work in the app, not in Snowflake.<br>No pushdown on encrypted columns. | A small, trusted on-premises analyst group |
 | **★ Homomorphic** | Arithmetic on ciphertext.<br>No key in Snowflake at all. | Arithmetic only.<br>Large ciphertexts and slow operations. | Salary and financial figures that only need sums and averages |
@@ -40,6 +42,10 @@ while Snowflake stays the analytics platform. Each option puts a different thing
 None of the options stops an authorised user from copying what they are allowed to see. The options can be
 combined: native Snowflake controls for the bulk, Option 2 or 2c for identifying columns, homomorphic encryption for
 salaries, and Option 1 or 3 for the few datasets that may not be stored in the cloud.
+
+**Key custody is not data custody.** "The key stays with us" (Options 2–2d) is a different requirement from "the data
+stays with us" (Options 1, 3, 4). Decrypting upstream before loading keeps the key outside Snowflake too, but puts
+plaintext in Snowflake from the first table on. Check which of the two a requirement actually means.
 
 ## Getting started
 
@@ -153,6 +159,7 @@ Every option has its own setup. Keys, tokens and generated configuration are wri
 | 2 | `cd opt2-keybroker && ./setup.sh`, then `pixi run enroll` and scan the QR code | `pixi run demo`, or the Option 2 block in `snowsight_demo.sql` with `pixi run portal` |
 | 2b | After Option 2 (it grants to Option 2's roles): `snow sql -c $SNOW_CONNECTION -f opt2b-warm-cache/snowflake/00_probe.sql`, then `01_probe_eai.sql` | The Option 2b block in `snowsight_demo.sql` |
 | 2c | `cd opt2c-device-flow && ./setup.sh` (after Option 2) | The Option 2c block in `snowsight_demo.sql`, or `pixi run e2e` |
+| 2d | Included in the 2c setup (`snowflake/30_remote_decrypt.sql`) | `SOV_DECRYPT_2D(salary, 'salary', $api_key)` after the 2c login; `python3 bench/run_all.py opt2d` |
 | 3 | `cd opt3-local-join && pixi run setup-snowflake` | `pixi run lab` |
 | 4 | `cd opt4-client-decrypt && ./setup_demo.sh` (more app IPs: `APP_IP=a.b.c.d/32,...`) | `pixi run app` → http://localhost:8501 |
 | ★ | `cd bonus-homomorphic && pixi run deploy && pixi run load` | `pixi run demo` or `pixi run lab` |
@@ -194,6 +201,7 @@ Run a subset with `python3 bench/run_all.py opt1 opt2c`. Option 1b runs headless
 | 2 Key broker | 4.1 s (14.6 s before the call-back fix) |
 | 2b EAI key fetch | 2.3 s |
 | 2c Device flow | 2.8 s |
+| 2d Remote decrypt | 4.0 s (2c on the same data: 2.9 s) |
 | 3 Local join (incl. write-back) | 2.3 s |
 | 4 Client decrypt | 0.1 s |
 | ★ Homomorphic sum | 2.9 s (packed: 1.5 s) |

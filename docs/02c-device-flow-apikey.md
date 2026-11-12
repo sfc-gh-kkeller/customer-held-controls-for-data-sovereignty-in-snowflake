@@ -120,3 +120,8 @@ Objects: `SOVEREIGNTY_DEMO.OPT2C_DEVICE_FLOW` (`EMPLOYEES_ENC`, `SELF_QUERY`, `S
 `SOV_DEVICE_REDEEM`, `SOV_GET_KEY_2C`, `SOV_DECRYPT_2C`, `SOV_BIND_PROBE`),
 EAI `SOV_OPT2C_EAI`, network rule `OPT2C_EGRESS`. AWS: `Opt2cMockIdp`, `Opt2cBroker`,
 `Opt2cState` table and `sovereignty-demo/opt2c-signing` secret, all in stack `SovereigntyKeyBroker`.
+
+**Stored results and Dynamic Tables:** `SOV_DECRYPT_2C` returns NULL when access is denied, which suits interactive
+queries. If its result is stored (`CREATE TABLE AS`, an incremental Dynamic Table), a denial becomes a stored NULL
+that an incremental Dynamic Table never revisits. Use [Option 2d](02d-remote-decrypt.md)'s `SOV_DECRYPT_2D_STRICT`,
+which raises instead, or check for unexpected NULLs before storing.

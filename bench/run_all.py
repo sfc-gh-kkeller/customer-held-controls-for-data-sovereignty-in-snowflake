@@ -28,6 +28,7 @@ BENCHES = {
     "opt1b": ("opt1-tunnel", "b_opt1b.py"),
     "opt2": ("opt2-keybroker", "b_opt2.py"),
     "opt2c": ("opt2c-device-flow", "b_opt2c.py"),
+    "opt2d": ("opt2c-device-flow", "b_opt2d.py"),
     "opt3": ("opt3-local-join", "b_opt3.py"),
     "opt4": ("opt4-client-decrypt", "b_opt4.py"),
     "he": ("bonus-homomorphic", "b_he.py"),
@@ -72,6 +73,7 @@ def report() -> str:
     s, o1, o1b, o2, o2b4 = load("snowflake"), load("opt1"), load("opt1b"), load("opt2"), \
         load("opt2_before_callback_fix")
     o2c, o3, o4, he = load("opt2c"), load("opt3"), load("opt4"), load("he")
+    o2d = load("opt2d")
     base = (s.get("baseline_200") or {}).get("wall", {}).get("p50")
     lines = [
         "# Performance results",
@@ -107,6 +109,11 @@ def report() -> str:
             "Python UDF start-up alone"),
         row("2c Device flow", "aggregate, decrypt 200 salaries", o2c.get("aggregate_200"), "Snowflake UDF + broker"),
         row("2c Device flow", "200 decrypted rows", o2c.get("rows_200"), "Snowflake UDF + broker"),
+        row("2d Remote decrypt", "aggregate, decrypt 200 salaries in AWS", o2d.get("aggregate_200"),
+            "Snowflake UDF + broker", "key never enters Snowflake; ciphertext out, plaintext back"),
+        row("2d Remote decrypt", "200 decrypted rows", o2d.get("rows_200"), "Snowflake UDF + broker",
+            "checks: " + (", ".join(f"{k} {'ok' if v else 'FAIL'}" for k, v in (o2d.get("checks") or {}).items())
+                          or "not run")),
         row("3 Local join", "pull public → join on-prem → write back aggregates", o3, "on-prem + Snowflake",
             f"pull {ms((o3.get('pull_public') or {}).get('p50'))}, join "
             f"{ms((o3.get('local_join_aggregate') or {}).get('p50'))}, write-back "

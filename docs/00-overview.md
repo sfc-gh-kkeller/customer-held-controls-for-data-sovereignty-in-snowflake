@@ -34,6 +34,13 @@ the query is RUNNING, calls the 2c function and is the only such query in the se
 bindings, one call-back per query, about 0.3 s extra per query. A session-lookup alternative was weaker on
 back-to-back queries (8/15). Details: [02c-device-flow-apikey.md](02c-device-flow-apikey.md).
 
+### Option 2d – 2c, but the key never enters Snowflake
+
+Same approval, API key and query binding as 2c, but the broker never returns the key: a vectorized UDF sends
+batches of ciphertext, the broker decrypts in AWS and returns plaintext. Also the shape for external
+de-tokenization. A strict variant raises instead of returning NULL, for `CREATE TABLE AS` and Dynamic Tables.
+Details: [02d-remote-decrypt.md](02d-remote-decrypt.md).
+
 ## Decision guide
 
 ```mermaid

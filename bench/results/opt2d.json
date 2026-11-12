@@ -1,0 +1,81 @@
+{
+  "name": "opt2d",
+  "ts": "2026-11-12T11:29:07",
+  "login_ms": {
+    "n": 1,
+    "p50": 14505,
+    "p95": 14505,
+    "min": 14505,
+    "max": 14505,
+    "mean": 14505
+  },
+  "aggregate_200": {
+    "first_ms": 4875,
+    "wall": {
+      "n": 10,
+      "p50": 3967,
+      "p95": 4473,
+      "min": 3265,
+      "max": 4473,
+      "mean": 3868
+    },
+    "server": {
+      "n": 10,
+      "p50": 3888,
+      "p95": 4396,
+      "min": 3190,
+      "max": 4396,
+      "mean": 3788
+    },
+    "rows": 6,
+    "sample": [
+      [
+        "Engineering",
+        "23",
+        "100486"
+      ],
+      [
+        "Finance",
+        "29",
+        "90121"
+      ]
+    ]
+  },
+  "rows_200": {
+    "first_ms": 3050,
+    "wall": {
+      "n": 5,
+      "p50": 2828,
+      "p95": 2942,
+      "min": 2694,
+      "max": 2942,
+      "mean": 2816
+    },
+    "server": {
+      "n": 5,
+      "p50": 2747,
+      "p95": 2823,
+      "min": 2625,
+      "max": 2823,
+      "mean": 2723
+    },
+    "rows": 200,
+    "sample": [
+      [
+        "1",
+        "65149"
+      ],
+      [
+        "2",
+        "95520"
+      ]
+    ]
+  },
+  "checks": {
+    "all_200_decrypted": true,
+    "forged_key_returns_null": true,
+    "strict_denied_raises": true,
+    "strict_allowed_works": true,
+    "same_values_as_2c_first_20": true
+  }
+}
